@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: #fdf8f3;
+}
+
+/* Subtle dot texture instead of a flat color field - gives the warm
+   background some grain without being distracting or slowing anything down. */
+.bg-dots {
+  background-image: radial-gradient(circle, #e6bd8e55 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+/* A slight, consistent tilt used on cards/photos for the scrapbook feel.
+   Kept as a class (not inline hover) so it composes with hover:rotate-0. */
+.tilt-left {
+  transform: rotate(-1.5deg);
+}
+.tilt-right {
+  transform: rotate(1.5deg);
+}
