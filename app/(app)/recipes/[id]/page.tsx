@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Recipe } from "@/lib/types";
-import { getMe } from "@/lib/session";
+import { getMeCached } from "@/lib/session";
 import { profileOf } from "@/lib/profiles";
 import RecipeDetailClient from "./RecipeDetailClient";
 
@@ -9,12 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function RecipeDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const session = await getMe(supabase);
-  const { data, error } = await supabase
-    .from("recipes")
-    .select("*")
-    .eq("id", params.id)
-    .single();
+  const [session, { data, error }] = await Promise.all([
+    getMeCached(),
+    supabase.from("recipes").select("*").eq("id", params.id).single(),
+  ]);
 
   if (error || !data) notFound();
 

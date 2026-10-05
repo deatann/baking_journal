@@ -65,7 +65,7 @@ export default function ScaleCalculator({
             onClick={() => applyFactor(preset)}
             className={`rounded-full border-2 px-3 py-1 text-sm font-extrabold ${
               factor === preset
-                ? "border-ink bg-butter-300 text-ink"
+                ? "border-line bg-butter-300 text-ink"
                 : "border-crust-200 bg-white text-crust-600 active:bg-peach-100"
             }`}
           >
@@ -87,7 +87,7 @@ export default function ScaleCalculator({
               }
             }}
             aria-label="Custom scale"
-            className="w-16 rounded-xl border-2 border-crust-200 bg-white px-2 py-1 text-base font-bold focus:border-ink focus:outline-none"
+            className="w-16 rounded-xl border-2 border-crust-200 bg-white px-2 py-1 text-base font-bold focus:border-line focus:outline-none"
           />
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function ScaleCalculator({
         </p>
       )}
 
-      <ul className="overflow-hidden rounded-2xl border-2 border-ink bg-white">
+      <ul className="overflow-hidden rounded-2xl border-[1.5px] border-line bg-white">
         {ingredients.map((ing, idx) => {
           const scaledQty = scaleQty(ing.qty, factor);
           const done = ticked.has(ing.id);
@@ -121,7 +121,7 @@ export default function ScaleCalculator({
               } ${done ? "bg-crust-50" : ""}`}
             >
               <span
-                className={`grid h-5 w-5 translate-y-1 place-items-center rounded-md border-2 border-ink text-[12px] font-extrabold ${
+                className={`grid h-5 w-5 translate-y-1 place-items-center rounded-md border-[1.5px] border-line text-[12px] font-extrabold ${
                   done ? "bg-sage-400" : "bg-white"
                 }`}
                 aria-hidden

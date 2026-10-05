@@ -151,12 +151,12 @@ export default function ScanPage() {
                   key={i}
                   src={url}
                   alt={`Preview ${i + 1}`}
-                  className="h-24 w-24 rounded-xl border-2 border-ink object-cover"
+                  className="h-24 w-24 rounded-xl border-[1.5px] border-line object-cover"
                 />
               ))}
             </div>
           )}
-          <img src="/brand/scene.jpg" alt="" className="h-20 w-20 animate-bob rounded-full border-2 border-ink object-cover" />
+          <img src="/brand/scene.jpg" alt="" className="h-20 w-20 animate-bob rounded-full border-[1.5px] border-line object-cover" />
           <p className="font-hand text-2xl font-bold text-peach-500">
             {stage === "uploading" ? "Uploading..." : `Reading ${previewUrls.length} image${previewUrls.length === 1 ? "" : "s"}...`}
           </p>

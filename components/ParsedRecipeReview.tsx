@@ -51,19 +51,19 @@ export default function ParsedRecipeReview({
                 key={i}
                 src={url}
                 alt={`Source ${i + 1}`}
-                className="h-24 w-24 rounded-xl border-2 border-ink object-cover"
+                className="h-24 w-24 rounded-xl border-[1.5px] border-line object-cover"
                 style={{ zIndex: previewUrl.length - i }}
               />
             ))}
           </div>
         ) : (
           previewUrl && (
-            <img src={previewUrl} alt="Source" className="h-24 w-24 shrink-0 rounded-xl border-2 border-ink object-cover" />
+            <img src={previewUrl} alt="Source" className="h-24 w-24 shrink-0 rounded-xl border-[1.5px] border-line object-cover" />
           )
         )}
         <div className="min-w-0">
           {parsedBy === "ai" && (
-            <span className="mb-1 inline-block whitespace-nowrap rounded-full border-2 border-ink bg-butter-300 px-2 py-0.5 text-[11px] font-extrabold">
+            <span className="mb-1 inline-block whitespace-nowrap rounded-full border-[1.5px] border-line bg-butter-300 px-2 py-0.5 text-[11px] font-extrabold">
               ✨ AI read this
             </span>
           )}
@@ -74,7 +74,7 @@ export default function ParsedRecipeReview({
 
       <div>
         <p className={h}>Ingredients found ({parsed.ingredients.length})</p>
-        <ul className="overflow-hidden rounded-2xl border-2 border-ink bg-white">
+        <ul className="overflow-hidden rounded-2xl border-[1.5px] border-line bg-white">
           {parsed.ingredients.map((ing, i) => (
             <li key={ing.id} className={`px-3 py-2 text-[15px] ${i > 0 ? "border-t border-crust-200" : ""}`}>
               {ing.qtyRaw && <span className="font-extrabold">{ing.qtyRaw} </span>}

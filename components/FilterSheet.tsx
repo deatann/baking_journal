@@ -47,7 +47,7 @@ export default function FilterSheet({
         type="checkbox"
         checked={selected.has(o.key)}
         onChange={() => onToggle(o.key)}
-        className="h-6 w-6 shrink-0 appearance-none rounded-lg border-2 border-ink bg-white checked:bg-sage-400 checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%233b2a22%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M5 12.5l4.5 4.5L19 7%22/></svg>')] checked:bg-center checked:bg-no-repeat"
+        className="h-6 w-6 shrink-0 appearance-none rounded-lg border-[1.5px] border-line bg-white checked:bg-sage-400 checked:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%233b2a22%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M5 12.5l4.5 4.5L19 7%22/></svg>')] checked:bg-center checked:bg-no-repeat"
       />
       {o.label}
       <span className="ml-auto text-xs font-bold text-crust-500">{o.count}</span>
@@ -59,13 +59,13 @@ export default function FilterSheet({
       className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="flex max-h-[86%] w-full max-w-lg animate-up flex-col rounded-t-[28px] border-[2.5px] border-b-0 border-ink bg-white">
+      <div className="flex max-h-[86%] w-full max-w-lg animate-up flex-col rounded-t-[28px] border-[1.5px] border-b-0 border-line bg-white">
         <div className="flex items-center justify-between px-5 pb-1.5 pt-4">
           <h2 className="font-display text-[22px] font-bold">Filter recipes</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="h-9 w-9 rounded-full border-2 border-ink bg-white text-lg leading-none"
+            className="h-9 w-9 rounded-full border-[1.5px] border-line bg-white text-lg leading-none"
           >
             ×
           </button>
@@ -102,7 +102,7 @@ export default function FilterSheet({
         <div className="flex flex-col gap-2.5 border-t-2 border-crust-200 px-5 pb-5 pt-3">
           <div className="flex items-center gap-2 text-[13px] font-bold text-crust-600">
             Match
-            <div className="flex overflow-hidden rounded-full border-2 border-ink">
+            <div className="flex overflow-hidden rounded-full border-[1.5px] border-line">
               {(["any", "all"] as const).map((m) => (
                 <button
                   key={m}

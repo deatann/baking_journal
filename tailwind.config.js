@@ -9,6 +9,8 @@ module.exports = {
       colors: {
         // Dark brown used for text and every outline - the "ink" of the hand-drawn look.
         ink: "#3b2a22",
+        // Outline colour for cards, buttons and chips. One variable so it can be flipped to dark (#3b2a22) in one place.
+        line: "var(--line)",
         // Warm wood/cream scale. 50 is the page background, 200-300 the soft borders,
         // 500 the muted text, 600-700 the accent brown, 900 = ink.
         crust: {
@@ -41,7 +43,7 @@ module.exports = {
       boxShadow: {
         pop: "3px 4px 0 #ecd2ac",
         popbig: "5px 6px 0 #ecd2ac",
-        inkpop: "2px 3px 0 #3b2a22",
+        inkpop: "2px 3px 0 #ecd2ac",
       },
       keyframes: {
         bob: { "50%": { transform: "translateY(-8px) rotate(-2deg)" } },

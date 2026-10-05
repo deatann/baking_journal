@@ -89,7 +89,7 @@ export default function RecipesBrowser({
           onClick={() => setSheetOpen(true)}
           aria-label="Filter"
           className={`relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 ${
-            active ? "border-ink bg-butter-300 text-ink" : "border-crust-200 bg-white text-crust-600"
+            active ? "border-line bg-butter-300 text-ink" : "border-crust-200 bg-white text-crust-600"
           }`}
         >
           <svg viewBox="0 0 24 24" strokeWidth="2.3" strokeLinecap="round" className="h-[22px] w-[22px] fill-none stroke-current">

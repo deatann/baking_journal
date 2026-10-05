@@ -12,9 +12,9 @@ export default function RecipeCard({ recipe, byName }: { recipe: Recipe; byName?
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="relative block overflow-hidden rounded-[20px] border-[2.5px] border-ink bg-white px-4 pb-3.5 pt-5 shadow-pop transition-transform active:scale-[0.98] md:hover:-translate-y-0.5"
+      className="relative block overflow-hidden rounded-[20px] border-[1.5px] border-line bg-white px-4 pb-3.5 pt-5 shadow-pop press md:hover:-translate-y-0.5"
     >
-      <span className={`absolute left-0 top-0 h-2.5 w-full border-b-[2.5px] border-ink ${classes.strip}`} />
+      <span className={`absolute left-0 top-0 h-2.5 w-full border-b-[1.5px] border-line ${classes.strip}`} />
       <h2 className="font-display text-[19px] font-bold leading-tight text-ink">
         <span className="mr-1">{emoji}</span>
         {recipe.title}
@@ -31,7 +31,7 @@ export default function RecipeCard({ recipe, byName }: { recipe: Recipe; byName?
           {shown.map((tag) => (
             <span
               key={tag}
-              className="shrink-0 rounded-full border-[1.5px] border-ink bg-peach-100 px-2.5 py-0.5 text-[11px] font-bold"
+              className="shrink-0 rounded-full border-[1.5px] border-line bg-peach-100 px-2.5 py-0.5 text-[11px] font-bold"
             >
               {tag}
             </span>

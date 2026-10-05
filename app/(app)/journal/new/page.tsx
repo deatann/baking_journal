@@ -119,7 +119,7 @@ function NewBakeForm() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 [&>div]:min-w-0">
             <div>
               <label className="label">Date</label>
               <input type="date" value={bakedOn} onChange={(e) => setBakedOn(e.target.value)} className="field" />

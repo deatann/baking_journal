@@ -64,12 +64,12 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
             <img
               src={photo.previewUrl}
               alt=""
-              className="h-24 w-24 rounded-xl border-2 border-ink object-cover"
+              className="h-24 w-24 rounded-xl border-[1.5px] border-line object-cover"
             />
             <button
               type="button"
               onClick={() => removePhoto(photo.path)}
-              className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-white text-xs text-red-500"
+              className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-[1.5px] border-line bg-white text-xs text-red-500"
               aria-label="Remove photo"
             >
               ✕

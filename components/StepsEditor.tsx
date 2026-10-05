@@ -31,7 +31,7 @@ export default function StepsEditor({ steps, onChange }: Props) {
     <div className="space-y-3">
       {steps.map((step, i) => (
         <div key={i} className="flex gap-2.5">
-          <span className="mt-2 grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-ink bg-butter-300 text-xs font-extrabold">
+          <span className="mt-2 grid h-7 w-7 shrink-0 place-items-center rounded-full border-[1.5px] border-line bg-butter-300 text-xs font-extrabold">
             {i + 1}
           </span>
           <div className="min-w-0 flex-1">

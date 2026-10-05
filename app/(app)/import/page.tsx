@@ -70,7 +70,7 @@ export default function ImportTextPage() {
 
       {stage === "parsing" && (
         <div className="card flex flex-col items-center gap-3 p-8 text-center">
-          <img src="/brand/scene.jpg" alt="" className="h-28 w-28 animate-bob rounded-full border-2 border-ink object-cover" />
+          <img src="/brand/scene.jpg" alt="" className="h-28 w-28 animate-bob rounded-full border-[1.5px] border-line object-cover" />
           <p className="font-hand text-2xl font-bold text-peach-500">reading your recipe...</p>
         </div>
       )}

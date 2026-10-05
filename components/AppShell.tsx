@@ -68,7 +68,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
   }
 
   const accountMenu = (
-    <div className="absolute z-40 min-w-[190px] animate-drop rounded-2xl border-[2.5px] border-ink bg-white p-1.5 shadow-pop">
+    <div className="absolute z-40 min-w-[190px] animate-drop rounded-2xl border-[1.5px] border-line bg-white p-1.5 shadow-pop">
       <div className="mb-1 border-b border-dashed border-crust-200 px-3 pb-2 pt-1.5 text-xs font-bold text-crust-500">
         Signed in as
         <div className="text-sm font-extrabold text-ink">{me.name}</div>
@@ -98,9 +98,9 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
           key={o.href}
           href={o.href}
           onClick={() => setAddOpen(false)}
-          className="flex items-center gap-3 rounded-2xl p-2.5 hover:bg-peach-100"
+          className="press flex items-center gap-3 rounded-2xl p-2.5 hover:bg-peach-100"
         >
-          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border-2 border-ink text-[22px] ${o.bg}`}>
+          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border-[1.5px] border-line text-[22px] ${o.bg}`}>
             {o.icon}
           </span>
           <span>
@@ -113,8 +113,8 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
   );
 
   const navBtn = (active: boolean) =>
-    `rounded-full border-2 px-4 py-1.5 text-sm font-extrabold transition-colors ${
-      active ? "border-ink bg-butter-300 text-ink" : "border-transparent text-crust-600 hover:bg-crust-100"
+    `press rounded-full border-[1.5px] px-4 py-1.5 text-sm font-extrabold ${
+      active ? "border-line bg-butter-300 text-ink" : "border-transparent text-crust-600 hover:bg-crust-100"
     }`;
 
   return (
@@ -130,7 +130,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
       )}
 
       {/* ---------- desktop top bar ---------- */}
-      <header className="fixed inset-x-0 top-0 z-30 hidden h-16 border-b-[2.5px] border-crust-200 bg-crust-50/95 backdrop-blur md:block">
+      <header className="fixed inset-x-0 top-0 z-30 hidden h-16 border-b-[1.5px] border-crust-200 bg-crust-50/95 backdrop-blur md:block">
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-6">
           <div className="relative flex items-center gap-2.5">
             <button
@@ -139,7 +139,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
                 setMenuOpen((v) => !v);
               }}
               aria-label="Account menu"
-              className="transition-transform hover:-rotate-6 hover:scale-105"
+              className="press block rounded-full transition-transform hover:-rotate-6 hover:scale-105"
             >
               <Avatar name={me.name} url={me.avatarUrl} size={44} />
             </button>
@@ -165,7 +165,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
               Journal
             </Link>
             {addOpen && (
-              <div className="absolute right-16 top-14 z-40 w-80 animate-drop rounded-3xl border-[2.5px] border-ink bg-white p-2.5 shadow-pop">
+              <div className="absolute right-16 top-14 z-40 w-80 animate-drop rounded-3xl border-[1.5px] border-line bg-white p-2.5 shadow-pop">
                 {addList}
               </div>
             )}
@@ -186,7 +186,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             setMenuOpen((v) => !v);
           }}
           aria-label="Account menu"
-          className="rounded-full shadow-inkpop active:scale-90"
+          className="press block rounded-full"
         >
           <Avatar name={me.name} url={me.avatarUrl} size={48} />
         </button>
@@ -196,21 +196,21 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
       {/* ---------- phone: + menu and bottom bar ---------- */}
       {addOpen && (
         <div
-          className="fixed left-1/2 z-40 w-[min(calc(100%-28px),340px)] -translate-x-1/2 animate-pop rounded-3xl border-[2.5px] border-ink bg-white p-2.5 shadow-pop md:hidden"
+          className="fixed left-1/2 z-40 w-[min(calc(100%-28px),340px)] -translate-x-1/2 animate-pop rounded-3xl border-[1.5px] border-line bg-white p-2.5 shadow-pop md:hidden"
           style={{ bottom: "calc(98px + env(safe-area-inset-bottom))" }}
         >
           {addList}
         </div>
       )}
       <nav
-        className="fixed left-1/2 z-40 flex h-16 w-[min(calc(100%-28px),340px)] -translate-x-1/2 items-center justify-around rounded-full border-[2.5px] border-ink bg-white shadow-pop md:hidden"
+        className="fixed left-1/2 z-40 flex h-16 w-[min(calc(100%-28px),340px)] -translate-x-1/2 items-center justify-around rounded-full border-[1.5px] border-line bg-white shadow-pop md:hidden"
         style={{ bottom: "calc(14px + env(safe-area-inset-bottom))" }}
       >
         <Link
           href="/recipes"
           aria-label="Recipes"
-          className={`grid h-12 w-12 place-items-center rounded-full ${
-            recipesActive ? "bg-butter-300 text-ink ring-2 ring-ink" : "text-crust-600"
+          className={`press grid h-12 w-12 place-items-center rounded-full ${
+            recipesActive ? "bg-butter-300 text-ink ring-[1.5px] ring-line" : "text-crust-600"
           }`}
         >
           <svg viewBox="0 0 24 24" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className={NAV_ICON}>
@@ -225,7 +225,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             setMenuOpen(false);
             setAddOpen((v) => !v);
           }}
-          className={`-mt-[22px] grid h-[60px] w-[60px] place-items-center rounded-full border-[2.5px] border-ink text-ink shadow-inkpop transition-colors ${
+          className={`press -mt-[22px] grid h-[60px] w-[60px] place-items-center rounded-full border-[1.5px] border-line text-ink shadow-inkpop ${
             addOpen ? "bg-peach-300" : "bg-sage-400"
           }`}
         >
@@ -241,8 +241,8 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
         <Link
           href="/journal"
           aria-label="Journal"
-          className={`grid h-12 w-12 place-items-center rounded-full ${
-            journalActive ? "bg-butter-300 text-ink ring-2 ring-ink" : "text-crust-600"
+          className={`press grid h-12 w-12 place-items-center rounded-full ${
+            journalActive ? "bg-butter-300 text-ink ring-[1.5px] ring-line" : "text-crust-600"
           }`}
         >
           <svg viewBox="0 0 24 24" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className={NAV_ICON}>

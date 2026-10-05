@@ -211,7 +211,7 @@ export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopCon
             {values.tags.map((t) => (
               <span
                 key={t}
-                className="inline-flex items-center gap-1 rounded-full border-[1.5px] border-ink bg-peach-100 py-0.5 pl-2.5 pr-1.5 text-xs font-bold"
+                className="inline-flex items-center gap-1 rounded-full border-[1.5px] border-line bg-peach-100 py-0.5 pl-2.5 pr-1.5 text-xs font-bold"
               >
                 {t}
                 <button

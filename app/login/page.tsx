@@ -54,14 +54,14 @@ function LoginForm() {
     <div className="mx-auto grid max-w-4xl pb-10 md:min-h-screen md:grid-cols-[1.1fr_1fr] md:items-center md:gap-9 md:px-6 md:pb-0">
       {/* hero: full-bleed on phones (the card overlaps its bottom edge), framed on desktop */}
       <div className="relative">
-        <div className="h-[290px] overflow-hidden rounded-b-[44px] border-b-[2.5px] border-ink bg-white md:h-auto md:rounded-[34px_34px_60px_60px/30px_30px_56px_56px] md:border-[2.5px]">
+        <div className="h-[290px] overflow-hidden rounded-b-[44px] border-b-[1.5px] border-line bg-white md:h-auto md:rounded-[34px_34px_60px_60px/30px_30px_56px_56px] md:border-[1.5px]">
           <img
             src="/brand/scene.jpg"
             alt="Illustrated baker whisking batter in a cosy kitchen"
             className="h-full w-full object-cover object-[50%_30%] md:h-auto"
           />
         </div>
-        <span className="absolute right-3.5 top-3.5 -rotate-6 rounded-xl border-2 border-ink bg-butter-300 px-2.5 font-hand text-[26px] font-bold text-crust-600 md:-bottom-3.5 md:right-[-8px] md:top-auto">
+        <span className="absolute right-3.5 top-3.5 -rotate-6 rounded-xl border-[1.5px] border-line bg-butter-300 px-2.5 font-hand text-[26px] font-bold text-crust-600 md:-bottom-3.5 md:right-[-8px] md:top-auto">
           fresh batch!
         </span>
       </div>

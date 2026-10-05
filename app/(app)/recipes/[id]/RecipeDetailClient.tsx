@@ -138,7 +138,7 @@ export default function RecipeDetailClient({
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-1 flex items-start gap-3 pl-[62px] md:pl-0">
+      <div className="mb-3 flex min-h-[56px] items-center gap-3 pl-[62px] md:min-h-0 md:pl-0">
         <h1 className="min-w-0 flex-1 font-display text-[26px] font-bold leading-tight text-ink md:text-3xl">
           <span className="mr-1">{emoji}</span>
           {recipe.title}
@@ -163,7 +163,7 @@ export default function RecipeDetailClient({
           {recipe.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border-[1.5px] border-ink bg-peach-100 px-2.5 py-0.5 text-xs font-bold"
+              className="rounded-full border-[1.5px] border-line bg-peach-100 px-2.5 py-0.5 text-xs font-bold"
             >
               {tag}
             </span>
@@ -191,7 +191,7 @@ export default function RecipeDetailClient({
           <img
             src={sourceImageUrl}
             alt="Original scanned recipe"
-            className="mt-2 max-h-96 rounded-2xl border-2 border-ink object-contain"
+            className="mt-2 max-h-96 rounded-2xl border-[1.5px] border-line object-contain"
           />
         </details>
       )}
@@ -221,7 +221,7 @@ export default function RecipeDetailClient({
                   className={`flex cursor-pointer gap-3 text-[15px] leading-snug ${done ? "text-crust-400 line-through" : "text-ink"}`}
                 >
                   <span
-                    className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-ink text-xs font-extrabold no-underline ${
+                    className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-[1.5px] border-line text-xs font-extrabold no-underline ${
                       done ? "bg-sage-400" : "bg-butter-300"
                     }`}
                   >

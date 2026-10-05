@@ -20,7 +20,7 @@ export default function Avatar({
 }) {
   return (
     <span
-      className={`inline-block shrink-0 overflow-hidden rounded-full border-2 border-ink bg-white ${className}`}
+      className={`inline-block shrink-0 overflow-hidden rounded-full border-[1.5px] border-line bg-white ${className}`}
       style={{ width: size, height: size }}
     >
       {url ? (

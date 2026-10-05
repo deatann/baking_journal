@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Recipe } from "@/lib/types";
-import { getMe } from "@/lib/session";
+import { getMeCached } from "@/lib/session";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import RecipesBrowser from "./RecipesBrowser";
@@ -9,11 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function RecipesPage() {
   const supabase = createClient();
-  const session = await getMe(supabase);
-  const { data, error } = await supabase
-    .from("recipes")
-    .select("*")
-    .order("updated_at", { ascending: false });
+  const [session, { data, error }] = await Promise.all([
+    getMeCached(),
+    supabase.from("recipes").select("*").order("updated_at", { ascending: false }),
+  ]);
 
   if (error) {
     return (
