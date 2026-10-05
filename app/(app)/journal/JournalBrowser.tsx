@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,7 @@ import Avatar from "@/components/Avatar";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import PhotoSlider from "@/components/PhotoSlider";
+import { JOURNAL_PAGE_SIZE } from "@/lib/journalConfig";
 
 export interface JournalItem {
   id: string;
@@ -21,7 +22,6 @@ export interface JournalItem {
   rating: number | null;
   notes: string;
   photoPaths: string[];
-  photoUrls: string[];
   emoji: string;
 }
 
@@ -47,10 +47,12 @@ export default function JournalBrowser({
   items,
   people,
   meId,
+  initialUrls,
 }: {
   items: JournalItem[];
   people: Person[];
   meId: string;
+  initialUrls: Record<string, string>;
 }) {
   const router = useRouter();
   const [removed, setRemoved] = useState<Set<string>>(new Set());
@@ -60,6 +62,9 @@ export default function JournalBrowser({
   const [confirming, setConfirming] = useState<JournalItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [shown, setShown] = useState(JOURNAL_PAGE_SIZE);
+  const [fetchedUrls, setFetchedUrls] = useState<Record<string, string>>({});
+  const requested = useRef<Set<string>>(new Set());
 
   // Close the ⋯ menu on any outside tap.
   useEffect(() => {
@@ -79,6 +84,26 @@ export default function JournalBrowser({
         (q === "" || i.title.toLowerCase().includes(q) || i.notes.toLowerCase().includes(q)),
     );
   }, [live, query, who]);
+
+  // Only the bakes on screen get photo links (and download photos).
+  const visible = useMemo(() => filtered.slice(0, shown), [filtered, shown]);
+  const urlFor = (path: string) => initialUrls[path] ?? fetchedUrls[path];
+
+  useEffect(() => {
+    const need = visible
+      .flatMap((b) => b.photoPaths)
+      .filter((p) => !initialUrls[p] && !fetchedUrls[p] && !requested.current.has(p));
+    if (need.length === 0) return;
+    need.forEach((p) => requested.current.add(p));
+    createClient()
+      .storage.from("bake-photos")
+      .createSignedUrls(need, 60 * 60)
+      .then(({ data }) => {
+        const add: Record<string, string> = {};
+        for (const d of data ?? []) if (d.path && d.signedUrl) add[d.path] = d.signedUrl;
+        setFetchedUrls((prev) => ({ ...prev, ...add }));
+      });
+  }, [visible, initialUrls, fetchedUrls]);
 
   // Put "me" first in the people filter.
   const orderedPeople = useMemo(
@@ -124,7 +149,10 @@ export default function JournalBrowser({
           <input
             type="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShown(JOURNAL_PAGE_SIZE);
+            }}
             placeholder="Search bakes..."
             className="field mb-2.5 md:max-w-md"
           />
@@ -133,7 +161,10 @@ export default function JournalBrowser({
             <div className="-mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
               <button
                 type="button"
-                onClick={() => setWho("all")}
+                onClick={() => {
+                  setWho("all");
+                  setShown(JOURNAL_PAGE_SIZE);
+                }}
                 className={`press shrink-0 rounded-full border-[1.5px] px-3.5 py-1.5 text-[13px] font-extrabold ${
                   who === "all" ? "border-line bg-butter-300" : "border-crust-300 bg-white"
                 }`}
@@ -144,7 +175,10 @@ export default function JournalBrowser({
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setWho(who === p.id ? "all" : p.id)}
+                  onClick={() => {
+                    setWho(who === p.id ? "all" : p.id);
+                    setShown(JOURNAL_PAGE_SIZE);
+                  }}
                   className={`press flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] py-1 pl-1 pr-3 text-[13px] font-extrabold ${
                     who === p.id ? "border-line bg-butter-300" : "border-crust-300 bg-white"
                   }`}
@@ -164,6 +198,7 @@ export default function JournalBrowser({
                 onClick={() => {
                   setQuery("");
                   setWho("all");
+                  setShown(JOURNAL_PAGE_SIZE);
                 }}
                 className="ml-2 font-extrabold text-peach-500 underline"
               >
@@ -176,16 +211,19 @@ export default function JournalBrowser({
             <p className="py-10 text-center text-sm text-crust-500">No bakes match.</p>
           ) : (
             <div className="-mx-4 grid grid-cols-1 gap-5 sm:-mx-6 md:mx-0 md:grid-cols-[repeat(auto-fit,minmax(240px,280px))] md:justify-center md:gap-6">
-              {filtered.map((bake, idx) => {
+              {visible.map((bake, idx) => {
                 const own = bake.userId === meId;
+                const urls = bake.photoPaths.map(urlFor).filter((u): u is string => !!u);
                 return (
                   <article
                     key={bake.id}
                     className="overflow-hidden border-y-[1.5px] border-line bg-white md:rounded-[20px] md:border-[1.5px] md:shadow-pop"
                   >
                     <div className="relative aspect-[3/4] bg-crust-100">
-                      {bake.photoUrls.length > 0 ? (
-                        <PhotoSlider urls={bake.photoUrls} />
+                      {urls.length > 0 ? (
+                        <PhotoSlider urls={urls} />
+                      ) : bake.photoPaths.length > 0 ? (
+                        <div className="h-full w-full animate-pulse bg-crust-100" aria-label="Loading photos" />
                       ) : (
                         <div className={`grid h-full w-full place-items-center text-7xl ${TILES[idx % TILES.length]}`}>
                           {bake.emoji}
@@ -263,6 +301,14 @@ export default function JournalBrowser({
                   </article>
                 );
               })}
+            </div>
+          )}
+
+          {filtered.length > shown && (
+            <div className="mt-6 text-center">
+              <button type="button" onClick={() => setShown((n) => n + JOURNAL_PAGE_SIZE)} className="btn btn-ghost">
+                Show more ({filtered.length - shown} left)
+              </button>
             </div>
           )}
         </>

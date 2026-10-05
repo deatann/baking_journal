@@ -36,7 +36,7 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
 
       const uploaded: UploadedPhoto[] = [];
       for (const file of toUpload) {
-        const compressed = await compressImage(file, { maxDimension: 1600, quality: 0.78 });
+        const compressed = await compressImage(file, { maxDimension: 1280, quality: 0.75 });
         const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
         const { error: uploadError } = await supabase.storage
           .from(bucket)

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Bake } from "@/lib/types";
 import { getMeCached } from "@/lib/session";
 import { categoryStyle } from "@/lib/categoryStyle";
+import { JOURNAL_PAGE_SIZE } from "@/lib/journalConfig";
 import JournalBrowser, { JournalItem, Person } from "./JournalBrowser";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +30,15 @@ export default async function JournalPage() {
 
   const bakes = (data ?? []) as Bake[];
 
-  // One request for every photo link instead of one request per photo.
-  const allPaths = Array.from(new Set(bakes.flatMap((b) => b.photo_paths ?? [])));
-  const urlByPath = new Map<string, string>();
-  if (allPaths.length > 0) {
-    const { data: signed } = await supabase.storage.from("bake-photos").createSignedUrls(allPaths, 60 * 60);
-    for (const s of signed ?? []) if (s.path && s.signedUrl) urlByPath.set(s.path, s.signedUrl);
+  // Sign photo links only for the first page of bakes, in one request. The browser asks for
+  // more links when "Show more" (or a filter) brings further bakes into view.
+  const firstPaths = Array.from(
+    new Set(bakes.slice(0, JOURNAL_PAGE_SIZE).flatMap((b) => b.photo_paths ?? [])),
+  );
+  const initialUrls: Record<string, string> = {};
+  if (firstPaths.length > 0) {
+    const { data: signed } = await supabase.storage.from("bake-photos").createSignedUrls(firstPaths, 60 * 60);
+    for (const s of signed ?? []) if (s.path && s.signedUrl) initialUrls[s.path] = s.signedUrl;
   }
 
   const categoryById = new Map<string, string>();
@@ -45,7 +49,6 @@ export default async function JournalPage() {
 
   const items: JournalItem[] = bakes.map((b) => {
     const p = profiles[b.user_id];
-    const paths = b.photo_paths ?? [];
     return {
       id: b.id,
       userId: b.user_id,
@@ -57,8 +60,7 @@ export default async function JournalPage() {
       scale: b.scale_factor,
       rating: b.rating,
       notes: b.notes ?? "",
-      photoPaths: paths,
-      photoUrls: paths.map((path) => urlByPath.get(path)).filter((u): u is string => !!u),
+      photoPaths: b.photo_paths ?? [],
       emoji: categoryStyle(b.recipe_id ? categoryById.get(b.recipe_id) : undefined).emoji,
     };
   });
@@ -71,5 +73,5 @@ export default async function JournalPage() {
     avatarUrl: profiles[id]?.avatarUrl ?? null,
   }));
 
-  return <JournalBrowser items={items} people={people} meId={meId} />;
+  return <JournalBrowser items={items} people={people} meId={meId} initialUrls={initialUrls} />;
 }
