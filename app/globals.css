@@ -8,6 +8,9 @@ html {
 
 :root {
   --line: #c4a07a;
+  --font-body: "Nunito", system-ui, sans-serif;
+  --font-display: "Baloo 2", Georgia, serif;
+  --font-hand: "Caveat", cursive;
 }
 
 body {

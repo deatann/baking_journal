@@ -1,27 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Caveat, Nunito } from "next/font/google";
+import "@fontsource/nunito/latin-400.css";
+import "@fontsource/nunito/latin-600.css";
+import "@fontsource/nunito/latin-700.css";
+import "@fontsource/nunito/latin-800.css";
+import "@fontsource/baloo-2/latin-600.css";
+import "@fontsource/baloo-2/latin-700.css";
+import "@fontsource/baloo-2/latin-800.css";
+import "@fontsource/caveat/latin-600.css";
+import "@fontsource/caveat/latin-700.css";
 import "./globals.css";
 
-// Rounded, friendly display font for headings...
-const displayFont = Baloo_2({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-display",
-});
-
-// ...a handwritten accent for taglines and small personal touches...
-const handFont = Caveat({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-hand",
-});
-
-// ...and a clean rounded sans for body text.
-const bodyFont = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-body",
-});
+// Fonts are bundled with the app (no Google Fonts request). The CSS variables that
+// tailwind.config.js points at (--font-body, --font-display, --font-hand) are declared
+// in globals.css.
 
 export const metadata: Metadata = {
   title: "Baking Journal",
@@ -43,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${handFont.variable} ${bodyFont.variable}`}>
+    <html lang="en">
       <body className="min-h-screen bg-dots font-sans text-ink antialiased">{children}</body>
     </html>
   );
