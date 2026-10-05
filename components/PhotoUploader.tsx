@@ -64,12 +64,12 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
             <img
               src={photo.previewUrl}
               alt=""
-              className="h-24 w-24 rounded-lg border border-crust-200 object-cover"
+              className="h-24 w-24 rounded-xl border-2 border-ink object-cover"
             />
             <button
               type="button"
               onClick={() => removePhoto(photo.path)}
-              className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs text-red-500 shadow ring-1 ring-crust-200 hover:bg-red-50"
+              className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-white text-xs text-red-500"
               aria-label="Remove photo"
             >
               ✕
@@ -78,7 +78,7 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
         ))}
 
         {photos.length < maxPhotos && (
-          <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-crust-300 text-crust-400 hover:bg-crust-50">
+          <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-crust-300 bg-white text-crust-500 active:bg-peach-100">
             <span className="text-xl">{uploading ? "…" : "+"}</span>
             <span className="text-[10px]">{uploading ? "Uploading" : "Add photo"}</span>
             <input
@@ -96,8 +96,8 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
         )}
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-crust-400">
-        Photos are resized before upload to keep storage usage low. {photos.length}/{maxPhotos}.
+      <p className="text-xs text-crust-500">
+        Photos are resized before upload. {photos.length}/{maxPhotos}.
       </p>
     </div>
   );

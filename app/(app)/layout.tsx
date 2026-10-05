@@ -1,10 +1,13 @@
-import Navbar from "@/components/Navbar";
+import { redirect } from "next/navigation";
+import AppShell from "@/components/AppShell";
+import { createClient } from "@/lib/supabase/server";
+import { getMe } from "@/lib/session";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Navbar />
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
-    </>
-  );
+export const dynamic = "force-dynamic";
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient();
+  const session = await getMe(supabase);
+  if (!session) redirect("/login");
+  return <AppShell me={session.me}>{children}</AppShell>;
 }

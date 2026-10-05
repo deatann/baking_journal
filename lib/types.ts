@@ -22,7 +22,7 @@ export interface Recipe {
   notes: string;
   source_type: "manual" | "scanned";
   source_image_path: string | null;
-  is_favorite: boolean;
+  is_favorite?: boolean; // legacy column, no longer used by the app
   created_at: string;
   updated_at: string;
 }
@@ -42,4 +42,11 @@ export interface Bake {
 
 export function newIngredientId() {
   return `ing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export interface Profile {
+  id: string;
+  display_name: string;
+  avatar_path: string | null;
+  updated_at: string;
 }

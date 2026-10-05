@@ -23,7 +23,23 @@ interface RawParsed {
   title?: string;
   ingredients?: RawIngredient[];
   steps?: string[];
+  bakeTimeMin?: number | null;
+  ovenTempC?: number | null;
   error?: string;
+}
+
+// Defensive cleanup: the model is asked for whole minutes / sensible degrees,
+// but anything outside a plausible range is dropped rather than trusted.
+function cleanBakeTime(v: unknown): number | null {
+  if (typeof v !== "number" || !Number.isFinite(v)) return null;
+  const n = Math.round(v);
+  return n >= 1 && n <= 720 ? n : null;
+}
+
+function cleanOvenTemp(v: unknown): number | null {
+  if (typeof v !== "number" || !Number.isFinite(v)) return null;
+  const n = Math.round(v);
+  return n >= 50 && n <= 400 ? n : null;
 }
 
 function shapeResult(data: RawParsed): ParsedRecipe {
@@ -42,6 +58,8 @@ function shapeResult(data: RawParsed): ParsedRecipe {
     })),
     steps: (data.steps || []).map((s) => s.trim()).filter(Boolean),
     unparsedLines: [],
+    bakeTimeMin: cleanBakeTime(data.bakeTimeMin),
+    ovenTempC: cleanOvenTemp(data.ovenTempC),
   };
 }
 

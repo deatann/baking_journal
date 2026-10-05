@@ -8,6 +8,7 @@ html {
 
 body {
   background-color: #fdf8f3;
+  color: #3b2a22;
 }
 
 /* Subtle dot texture instead of a flat color field - gives the warm
@@ -17,11 +18,33 @@ body {
   background-size: 22px 22px;
 }
 
-/* A slight, consistent tilt used on cards/photos for the scrapbook feel.
-   Kept as a class (not inline hover) so it composes with hover:rotate-0. */
-.tilt-left {
-  transform: rotate(-1.5deg);
-}
-.tilt-right {
-  transform: rotate(1.5deg);
+@layer components {
+  /* Text inputs, selects, textareas. 16px font so iOS doesn't zoom on focus. */
+  .field {
+    @apply w-full rounded-xl border-2 border-crust-200 bg-crust-50 px-3 py-2.5 text-base text-ink placeholder:text-crust-400 focus:border-sage-400 focus:outline-none;
+  }
+  .label {
+    @apply mb-1 block text-sm font-extrabold text-crust-600;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-ink px-5 py-2 text-sm font-extrabold text-ink shadow-inkpop transition-transform active:translate-x-px active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-sage-400;
+  }
+  .btn-ghost {
+    @apply bg-white;
+  }
+  .btn-peach {
+    @apply bg-peach-300;
+  }
+  .card {
+    @apply rounded-3xl border-[2.5px] border-ink bg-white shadow-popbig;
+  }
+  .dashed-btn {
+    @apply w-full rounded-xl border-2 border-dashed border-crust-300 bg-white px-3 py-2 text-sm font-extrabold text-crust-600 active:bg-peach-100;
+  }
+  .icon-btn {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl border-2 border-crust-200 bg-white text-lg text-crust-600 active:bg-peach-100;
+  }
 }

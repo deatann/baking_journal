@@ -37,7 +37,8 @@ export default function ScaleCalculator({
 }: Props) {
   const [factor, setFactor] = useState(1);
   const [customInput, setCustomInput] = useState("1");
-  const [showConversions, setShowConversions] = useState(true);
+  const [showConversions, setShowConversions] = useState(false);
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
 
   function applyFactor(f: number) {
     if (!Number.isFinite(f) || f <= 0) return;
@@ -46,24 +47,33 @@ export default function ScaleCalculator({
     onScaleChange?.(f);
   }
 
+  function toggleTick(id: string) {
+    setTicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         {SCALE_PRESETS.map((preset) => (
           <button
             key={preset}
             onClick={() => applyFactor(preset)}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+            className={`rounded-full border-2 px-3 py-1 text-sm font-extrabold ${
               factor === preset
-                ? "bg-crust-600 text-white"
-                : "bg-crust-100 text-crust-700 hover:bg-crust-200"
+                ? "border-ink bg-butter-300 text-ink"
+                : "border-crust-200 bg-white text-crust-600 active:bg-peach-100"
             }`}
           >
             ×{preset}
           </button>
         ))}
         <div className="flex items-center gap-1">
-          <span className="text-sm text-crust-500">×</span>
+          <span className="text-sm font-bold text-crust-500">×</span>
           <input
             type="text"
             inputMode="decimal"
@@ -76,54 +86,71 @@ export default function ScaleCalculator({
                 onScaleChange?.(n);
               }
             }}
-            className="w-16 rounded-md border border-crust-200 px-2 py-1 text-sm focus:border-crust-500 focus:outline-none"
+            aria-label="Custom scale"
+            className="w-16 rounded-xl border-2 border-crust-200 bg-white px-2 py-1 text-base font-bold focus:border-ink focus:outline-none"
           />
         </div>
-
-        <label className="ml-auto flex items-center gap-1.5 text-xs text-crust-500">
-          <input
-            type="checkbox"
-            checked={showConversions}
-            onChange={(e) => setShowConversions(e.target.checked)}
-            className="h-3.5 w-3.5 rounded border-crust-300"
-          />
-          cup/metric conversions
-        </label>
       </div>
 
+      <label className="mb-3 flex items-center gap-2 text-[13px] font-bold text-crust-600">
+        <input
+          type="checkbox"
+          checked={showConversions}
+          onChange={(e) => setShowConversions(e.target.checked)}
+          className="h-4 w-4 accent-[#3b2a22]"
+        />
+        Show cup / metric conversions
+      </label>
+
       {baseYieldQty && (
-        <p className="mb-3 text-sm text-crust-500">
+        <p className="mb-3 text-sm font-bold text-crust-500">
           Yields {formatQty(scaleQty(baseYieldQty, factor))} {baseYieldUnit} at ×{factor}
         </p>
       )}
 
-      <ul className="divide-y divide-crust-100 rounded-lg border border-crust-200">
-        {ingredients.map((ing) => {
+      <ul className="overflow-hidden rounded-2xl border-2 border-ink bg-white">
+        {ingredients.map((ing, idx) => {
           const scaledQty = scaleQty(ing.qty, factor);
+          const done = ticked.has(ing.id);
           return (
-            <li key={ing.id} className="px-3 py-2 text-sm">
-              <div className="flex items-baseline gap-2">
-                <span className="w-20 shrink-0 text-right font-medium text-crust-800">
-                  {formatQty(scaledQty)}
-                </span>
-                <span className="w-16 shrink-0 text-crust-500">{ing.unit}</span>
-                <span className="text-crust-800">{ing.name}</span>
-                {ing.note && <span className="text-crust-400">({ing.note})</span>}
-              </div>
+            <li
+              key={ing.id}
+              onClick={() => toggleTick(ing.id)}
+              className={`grid cursor-pointer grid-cols-[24px_92px_1fr] items-baseline gap-x-2.5 px-3 py-2.5 text-[15px] ${
+                idx > 0 ? "border-t border-crust-200" : ""
+              } ${done ? "bg-crust-50" : ""}`}
+            >
+              <span
+                className={`grid h-5 w-5 translate-y-1 place-items-center rounded-md border-2 border-ink text-[12px] font-extrabold ${
+                  done ? "bg-sage-400" : "bg-white"
+                }`}
+                aria-hidden
+              >
+                {done ? "✓" : ""}
+              </span>
+              <span className={`font-extrabold ${done ? "text-crust-400 line-through" : "text-ink"}`}>
+                {formatQty(scaledQty)} <span className="font-bold text-crust-500">{ing.unit}</span>
+              </span>
+              <span className={`min-w-0 ${done ? "text-crust-400 line-through" : "text-ink"}`}>
+                {ing.name}
+                {ing.note && <span className="ml-1.5 text-[13px] text-crust-400">{ing.note}</span>}
+              </span>
               {showConversions && (
-                <ConversionLine
-                  name={ing.name}
-                  qty={scaledQty}
-                  unit={ing.unit}
-                  userDensities={userDensities}
-                  onSaveDensity={onSaveDensity}
-                />
+                <div className="col-start-3" onClick={(e) => e.stopPropagation()}>
+                  <ConversionLine
+                    name={ing.name}
+                    qty={scaledQty}
+                    unit={ing.unit}
+                    userDensities={userDensities}
+                    onSaveDensity={onSaveDensity}
+                  />
+                </div>
               )}
             </li>
           );
         })}
         {ingredients.length === 0 && (
-          <li className="px-3 py-2 text-sm text-crust-400">No ingredients listed.</li>
+          <li className="px-3 py-2.5 text-sm text-crust-400">No ingredients listed.</li>
         )}
       </ul>
     </div>
@@ -159,7 +186,7 @@ function ConversionLine({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="ml-[88px] mt-0.5 text-xs text-crust-400 underline decoration-dotted hover:text-crust-600"
+          className="mt-0.5 text-xs text-crust-400 underline decoration-dotted hover:text-crust-600"
         >
           no conversion yet — weigh 1 cup and set it
         </button>
@@ -167,7 +194,7 @@ function ConversionLine({
     }
     return (
       <form
-        className="ml-[88px] mt-1 flex items-center gap-1.5"
+        className="mt-1 flex items-center gap-1.5"
         onSubmit={async (e) => {
           e.preventDefault();
           const grams = Number(input);
@@ -207,7 +234,7 @@ function ConversionLine({
   }
 
   return (
-    <div className="ml-[88px] mt-0.5 flex items-center gap-1.5">
+    <div className="mt-0.5 flex items-center gap-1.5">
       <span className={`rounded px-1.5 py-0.5 text-xs ${CONFIDENCE_STYLE[result.confidence]}`}>
         ≈ {result.text}
       </span>

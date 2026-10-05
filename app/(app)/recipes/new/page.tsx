@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import RecipeForm, { RecipeFormValues } from "@/components/RecipeForm";
 import { newIngredientId } from "@/lib/types";
+import PageHeader from "@/components/PageHeader";
 import { readRecipeDraft, clearRecipeDraft } from "@/lib/recipeDraft";
 
 const EMPTY: RecipeFormValues = {
@@ -19,7 +20,6 @@ const EMPTY: RecipeFormValues = {
   oven_temp_c: null,
   tags: [],
   notes: "",
-  is_favorite: false,
 };
 
 export default function NewRecipePage() {
@@ -74,7 +74,6 @@ function NewRecipeForm() {
         oven_temp_c: values.oven_temp_c,
         tags: values.tags,
         notes: values.notes,
-        is_favorite: values.is_favorite,
         source_type: sourceImagePath ? "scanned" : "manual",
         source_image_path: sourceImagePath,
       })
@@ -89,15 +88,23 @@ function NewRecipeForm() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 font-display text-2xl font-bold text-crust-800">
-        {fromDraft ? "Review imported recipe" : "New recipe"}
-      </h1>
+      <PageHeader
+        title={fromDraft ? "Review & save" : "New recipe"}
+        hand={fromDraft ? "almost in the book" : "write it down"}
+      />
       {ready && (
         <RecipeForm
           key={fromDraft ? "draft" : "blank"}
           initial={initial}
           submitLabel="Save recipe"
           onSubmit={handleSubmit}
+          extraTopContent={
+            fromDraft ? (
+              <div className="rounded-2xl border-2 border-butter-300 bg-butter-100 px-3.5 py-2.5 text-[13px] font-bold text-crust-700">
+                Filled in by AI. Check the quantities and steps before saving.
+              </div>
+            ) : undefined
+          }
         />
       )}
     </div>

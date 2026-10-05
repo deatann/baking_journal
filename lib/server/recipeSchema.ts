@@ -23,6 +23,8 @@ export const RECIPE_RESPONSE_SCHEMA = {
       },
     },
     steps: { type: "array", items: { type: "string" } },
+    bakeTimeMin: { type: "number", nullable: true },
+    ovenTempC: { type: "number", nullable: true },
   },
   required: ["title", "ingredients", "steps"],
 };
@@ -36,4 +38,15 @@ export const EXTRACTION_RULES = `Return JSON matching the schema exactly. Rules:
   - name: the clean ingredient name only - no bullets, no quantity, no unit, no parenthetical weight equivalents.
   - note: anything else useful (a gram/ml equivalent that was in parentheses, "packed", "chopped", "room temperature", a brand). Empty string if nothing.
 - steps: an ordered list of instruction sentences, stripped of leading numbering ("1.", "2)"). If no instructions are present at all, return an empty array - do not invent steps.
+- bakeTimeMin: total OVEN baking time in whole minutes, as a number, or null.
+  - Only count time actually spent baking or roasting in an oven. IGNORE resting, chilling, proofing/rising, cooling, freezing, soaking, and stovetop, steaming or frying time.
+  - One baking time: use it ("1 hour" -> 60, "1 hr 15 min" -> 75).
+  - A range such as "10-12 minutes": use the midpoint, rounded to a whole number, halves round up (10-12 -> 11, 9-12 -> 11).
+  - Several separate baking times: add them together, counting each range at its midpoint (e.g. "10 min, then 5-7 min more" -> 16).
+  - If no baking time is stated, return null. Do not guess.
+- ovenTempC: oven temperature in degrees Celsius, as a number rounded to the nearest 5, or null.
+  - Convert Fahrenheit to Celsius and round to the nearest 5 (350°F -> 175, 400°F -> 205).
+  - If the recipe mentions several DIFFERENT oven temperatures, return null. If the same temperature is mentioned more than once, return it.
+  - If no temperature is stated (or only "hot oven" / a gas mark with no degrees), return null. Do not guess.
+  - Keep the original sentences in steps exactly as written; these two fields are extra.
 - Translate all ingredient names and steps into English, regardless of the source language. Use common English culinary terms (e.g. "gula" -> "sugar", "telur" -> "egg", "tepung terigu" -> "all-purpose flour"). Keep qtyRaw as written in the source (numbers/fractions don't need translating).`;

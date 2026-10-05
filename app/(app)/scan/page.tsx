@@ -7,6 +7,7 @@ import { compressImage } from "@/lib/compressImage";
 import { ParsedRecipe } from "@/lib/parseRecipeText";
 import { parseImagesWithLLM } from "@/lib/llmParse";
 import { saveRecipeDraft } from "@/lib/recipeDraft";
+import PageHeader from "@/components/PageHeader";
 import ParsedRecipeReview from "@/components/ParsedRecipeReview";
 
 type Stage = "idle" | "uploading" | "scanning" | "review" | "error";
@@ -28,6 +29,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 export default function ScanPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [parsed, setParsed] = useState<ParsedRecipe | null>(null);
@@ -95,25 +97,37 @@ export default function ScanPage() {
     setSourceImagePath(null);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   }
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-2 font-display text-2xl font-bold text-crust-800">Scan &amp; Convert</h1>
-      <p className="mb-6 text-sm text-crust-500">
-        Upload a screenshot of a recipe - or several, if it took more than one screenshot to
-        capture the whole thing (e.g. a long Instagram caption). They get read together by AI as
-        one recipe, but always check the result before saving.{" "}
-        <a href="/import" className="underline hover:text-crust-700">
-          Pasting text from Notion or a website instead? Use text import.
-        </a>
-      </p>
+      <PageHeader title="New recipe" hand="from a photo" />
 
       {stage === "idle" && (
-        <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-crust-300 p-10 text-center text-crust-500 hover:bg-crust-50">
-          <span className="text-3xl">📷</span>
-          <span className="font-medium text-crust-700">Choose recipe screenshot(s)</span>
-          <span className="text-xs">JPG, PNG, or phone screenshots - up to {MAX_IMAGES} at once</span>
+        <div className="space-y-3">
+          <p className="text-sm text-crust-600">
+            Take a photo, or choose screenshots (up to {MAX_IMAGES}). Several images are read together as one recipe.
+          </p>
+          <div className="flex flex-col gap-2.5 sm:flex-row">
+            <button type="button" onClick={() => cameraInputRef.current?.click()} className="btn btn-primary">
+              Take photo
+            </button>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-ghost">
+              Choose screenshots
+            </button>
+          </div>
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              if (files.length) handleFiles(files);
+            }}
+          />
           <input
             ref={fileInputRef}
             type="file"
@@ -125,11 +139,11 @@ export default function ScanPage() {
               if (files.length) handleFiles(files);
             }}
           />
-        </label>
+        </div>
       )}
 
       {(stage === "uploading" || stage === "scanning") && (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-crust-200 p-10 text-center">
+        <div className="card flex flex-col items-center gap-4 p-8 text-center">
           {previewUrls.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2">
               {previewUrls.map((url, i) => (
@@ -137,26 +151,22 @@ export default function ScanPage() {
                   key={i}
                   src={url}
                   alt={`Preview ${i + 1}`}
-                  className="h-24 max-h-24 rounded-lg object-contain"
+                  className="h-24 w-24 rounded-xl border-2 border-ink object-cover"
                 />
               ))}
             </div>
           )}
-          <p className="text-sm text-crust-600">
-            {stage === "uploading"
-              ? "Uploading..."
-              : `Reading the recipe with AI${previewUrls.length > 1 ? ` (${previewUrls.length} images)` : ""}... (this can take a few seconds)`}
+          <img src="/brand/scene.jpg" alt="" className="h-20 w-20 animate-bob rounded-full border-2 border-ink object-cover" />
+          <p className="font-hand text-2xl font-bold text-peach-500">
+            {stage === "uploading" ? "Uploading..." : `Reading ${previewUrls.length} image${previewUrls.length === 1 ? "" : "s"}...`}
           </p>
         </div>
       )}
 
       {stage === "error" && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-          <p className="mb-3 text-sm text-red-700">{error}</p>
-          <button
-            onClick={reset}
-            className="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-100"
-          >
+        <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-6 text-center">
+          <p className="mb-3 text-sm font-bold text-red-700">{error}</p>
+          <button onClick={reset} className="btn btn-ghost">
             Try again
           </button>
         </div>

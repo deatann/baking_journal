@@ -1,97 +1,67 @@
 # Setup & deployment
 
-This is a Next.js app. Database, auth, and photo storage run on Supabase;
-OCR runs through Google Cloud Vision; hosting is on Vercel. All three have
-free tiers that comfortably cover personal use (see the conversation this
-came from for the sizing math).
+Next.js app. Supabase = database, auth, photo storage. Gemini = AI recipe reading. Vercel = hosting.
+Full behaviour spec: `PRD-baking-journal.md`.
 
-## 1. Supabase
+## 1. Supabase (one-time)
 
-1. Create a project at supabase.com if you haven't already.
-2. Open the SQL Editor (left sidebar) → New query → paste the contents of
-   `supabase/schema.sql` → Run. This creates the `recipes`, `bakes`, and
-   `ingredient_densities` tables, the two storage buckets, and the
-   row-level-security rules that keep your data private to your account.
-   (If you already ran an earlier version of this file, running it again
-   is safe — it only adds what's missing.)
-3. Turn off public sign-ups so nobody else can create an account:
-   Authentication → Providers → Email → toggle "Allow new users to sign up"
-   off.
-4. Create your own account: Authentication → Users → Add user → enter your
-   email and a password. Use "Auto Confirm User" so you don't need to click
-   an email link.
-5. Get your API keys: Project Settings → API → copy the **Project URL** and
-   the **anon public** key. You'll paste these into `.env.local` (below)
-   and later into Vercel.
+1. SQL Editor -> New query -> paste `supabase/schema.sql` -> Run.
+   Already have a working database from the earlier single-user version? Run only
+   `supabase/migration_shared_book.sql` instead. Both are safe to re-run.
+2. Authentication -> Providers -> Email -> turn **off** "Allow new users to sign up".
+3. Project Settings -> API -> copy **Project URL** and **anon public** key.
+   Never use or paste the `service_role` key anywhere in this app.
 
-## 2. Google Cloud Vision
+## 2. Adding family accounts
 
-You already created the API key. Keep it somewhere safe — you'll paste it
-directly into Vercel's dashboard in step 4, not into any file that gets
-committed to git.
+Authentication -> Users -> **Add user** -> email + password, tick **Auto Confirm User**.
+Repeat for each person (mom, sisters, brother). Give them their password yourself.
 
-## 3. Run it locally first
+- A profile row is created automatically; display name defaults to the email prefix.
+- Each person taps their circle (top-left on phone, top bar on desktop) -> **Edit profile & chibi**
+  to set their name and upload their own chibi. No admin step.
+- Your existing recipes and bakes stay owned by your account.
+
+## Google sign-in (optional)
+
+1. Google Cloud Console -> OAuth consent screen (External; scopes openid, email, profile; add family emails as Test users or publish).
+2. Credentials -> Create OAuth client ID (Web). Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`.
+3. Supabase -> Authentication -> Providers -> Google: paste Client ID + secret (the secret goes only here).
+4. Supabase -> Authentication -> URL Configuration: Site URL = your Vercel URL; add redirect URLs `https://<your-app>.vercel.app/**` and `http://localhost:3000/**`.
+5. Keep "Allow new users to sign up" off. Only Google emails that match an account you created can sign in. Test once with an unregistered Google account; it should be rejected.
+
+## 3. Environment variables
+
+`.env.local` (local) and Vercel -> Project Settings -> Environment Variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `GEMINI_API_KEY` (server-side only)
+
+After changing Vercel variables, redeploy.
+
+## 4. Run locally
 
 ```bash
-cp .env.local.example .env.local
-# edit .env.local: paste the Supabase URL + anon key, and the Vision API key
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000, sign in with the user you created in step 1.4,
-and try adding a recipe, scanning a screenshot, and logging a bake before
-deploying — much faster to fix things here than after a deploy.
+## 5. Deploy
 
-## 4. Deploy
+Push to GitHub (`git add . && git commit -m "..." && git push`). Vercel redeploys automatically.
 
-1. Push this project to a new GitHub repository (create the repo on
-   github.com first, then from this folder):
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial baking journal"
-   git remote add origin <your-repo-url>
-   git push -u origin main
-   ```
-   `.env.local` is gitignored — it will not be pushed. Good, since it holds
-   the Vision API key.
-2. On vercel.com: "Add New" → "Project" → import that GitHub repo.
-3. Before deploying, add the environment variables (Project Settings →
-   Environment Variables, or the form shown during import):
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `GOOGLE_VISION_API_KEY`
-4. Deploy. Vercel gives you a `.vercel.app` URL — that's your private
-   baking journal.
+## 6. Install on a phone (PWA)
 
-## Notes
+- iPhone: open the site in Safari -> Share -> Add to Home Screen.
+- Android: Chrome menu -> Install app / Add to Home screen.
 
-- Only the one Supabase user you created can sign in or see any data —
-  there's no public sign-up flow in the app itself.
-- Photos are resized to ~1600px/JPEG before upload specifically to stay
-  well inside Supabase's 1GB free storage tier over years of use.
-- The OCR parser (`lib/parseOcrText.ts`) is a heuristic, not magic — it
-  guesses ingredient lines from a leading number/fraction and guesses steps
-  from sentence length/punctuation. Always check the review screen before
-  saving a scanned recipe.
-- To add more users later (e.g. if you want your partner to have their own
-  login), create another user the same way in Supabase Auth — the RLS
-  rules already scope every row to `auth.uid()`, so a second user's data
-  stays separate from yours automatically.
-- Ingredient name and unit fields autocomplete as you type (a built-in list
-  of common baking ingredients, plus every name you've already used across
-  your own recipes) - no setup needed.
-- "Import from text" (next to "Scan a recipe" on the Recipes page) lets you
-  paste a recipe copied from Notion, a website, or anywhere else, and runs
-  it through the same parser and review screen as Scan & Convert, minus the
-  image/OCR step. Useful for migrating existing recipes in bulk, one paste
-  at a time, and for any future recipe you get as text rather than a photo.
-- Cup/metric conversion (`lib/density.ts`, `lib/convert.ts`) is shown on
-  every ingredient in the scaling calculator. Liquids, butter, and
-  granulated sugar use fairly reliable built-in estimates; flour, brown
-  sugar, and anything else you scoop are marked as rough estimates because
-  their real density depends on how you measure. Click "correct it" (or
-  "weigh 1 cup and set it") on any ingredient to save your own measured
-  value — it's remembered per ingredient name and reused across every
-  recipe from then on.
+No offline mode in this version; it needs a connection.
+
+## Rules to remember
+
+- Everyone can read all recipes and bakes. Only the owner can edit or delete their own (enforced in the database).
+- Ingredient density corrections are private to each user.
+- Chibis are stored in a public bucket (anyone with the image URL can view it).
+- AI scanning shares one Gemini free-tier quota across all five people.
+- The local fallback parser (used if AI fails) does not extract bake time or temperature.

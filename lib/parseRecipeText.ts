@@ -18,6 +18,10 @@ export interface ParsedRecipe {
   ingredients: ParsedIngredient[];
   steps: string[];
   unparsedLines: string[]; // anything the parser wasn't confident about
+  /** Total oven time in minutes, when the AI parser found one (local parser leaves this empty). */
+  bakeTimeMin?: number | null;
+  /** Oven temperature in C, when the AI parser found one (local parser leaves this empty). */
+  ovenTempC?: number | null;
 }
 
 const SECTION_HEADERS = {

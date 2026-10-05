@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { parseRecipeText, ParsedRecipe } from "@/lib/parseRecipeText";
 import { parseWithLLM } from "@/lib/llmParse";
 import { saveRecipeDraft } from "@/lib/recipeDraft";
+import PageHeader from "@/components/PageHeader";
 import ParsedRecipeReview from "@/components/ParsedRecipeReview";
 
 type Stage = "input" | "parsing" | "review";
@@ -47,37 +48,30 @@ export default function ImportTextPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-2 font-display text-2xl font-bold text-crust-800">Import from text</h1>
-      <p className="mb-6 text-sm text-crust-500">
-        Copy a recipe from Notion, a website, or a text message and paste the whole thing
-        below. Works best when the ingredients and steps are on separate lines - it uses the
-        same best-effort parser as Scan &amp; Convert, so check the result before saving.
-      </p>
+      <PageHeader title="New recipe" hand="from text" />
 
       {stage === "input" && (
         <div className="space-y-3">
+          <p className="text-sm text-crust-600">Paste a recipe, in any text form</p>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={16}
+            rows={14}
             placeholder={
-              "Brown Butter Chocolate Chip Cookies\n\nIngredients\n1 cup butter, browned\n2 cups flour\n1 cup brown sugar, packed\n...\n\nInstructions\n1. Brown the butter and let cool\n2. Mix dry ingredients\n..."
+              "Brown Butter Chocolate Chip Cookies\n\nIngredients\n1 cup butter, browned\n2 cups flour\n...\n\nInstructions\n1. Brown the butter and let cool\n..."
             }
-            className="w-full resize-y rounded-lg border border-crust-200 px-3 py-2 font-mono text-sm focus:border-crust-500 focus:outline-none focus:ring-1 focus:ring-crust-500"
+            className="field resize-y font-mono !text-sm"
           />
-          <button
-            onClick={handleParse}
-            disabled={!text.trim()}
-            className="rounded-full bg-crust-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-crust-700 hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0"
-          >
-            Parse recipe
+          <button onClick={handleParse} disabled={!text.trim()} className="btn btn-primary w-full sm:w-auto">
+            Upload
           </button>
         </div>
       )}
 
       {stage === "parsing" && (
-        <div className="rounded-xl border border-crust-200 p-10 text-center text-sm text-crust-600">
-          Parsing with AI...
+        <div className="card flex flex-col items-center gap-3 p-8 text-center">
+          <img src="/brand/scene.jpg" alt="" className="h-28 w-28 animate-bob rounded-full border-2 border-ink object-cover" />
+          <p className="font-hand text-2xl font-bold text-peach-500">reading your recipe...</p>
         </div>
       )}
 

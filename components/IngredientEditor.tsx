@@ -10,8 +10,7 @@ const UNIT_SUGGESTIONS = [
 interface Props {
   ingredients: Ingredient[];
   onChange: (ingredients: Ingredient[]) => void;
-  /** Ingredient names to offer as you type - common baking ingredients plus
-   * anything you've already used across your own saved recipes. */
+  /** Names offered while typing: common baking ingredients plus ones already used. */
   nameSuggestions?: string[];
 }
 
@@ -21,10 +20,7 @@ export default function IngredientEditor({ ingredients, onChange, nameSuggestion
   }
 
   function addRow() {
-    onChange([
-      ...ingredients,
-      { id: newIngredientId(), name: "", qty: null, unit: "", note: "" },
-    ]);
+    onChange([...ingredients, { id: newIngredientId(), name: "", qty: null, unit: "", note: "" }]);
   }
 
   function removeRow(id: string) {
@@ -32,19 +28,11 @@ export default function IngredientEditor({ ingredients, onChange, nameSuggestion
   }
 
   return (
-    <div className="space-y-2">
-      <div className="hidden grid-cols-[80px_100px_1fr_1fr_32px] gap-2 px-1 text-xs font-medium text-crust-500 sm:grid">
-        <span>Qty</span>
-        <span>Unit</span>
-        <span>Ingredient</span>
-        <span>Note</span>
-        <span></span>
-      </div>
-
+    <div className="space-y-2.5">
       {ingredients.map((row) => (
         <div
           key={row.id}
-          className="grid grid-cols-2 gap-2 rounded-lg border border-crust-100 p-2 sm:grid-cols-[80px_100px_1fr_1fr_32px] sm:border-0 sm:p-0"
+          className="grid grid-cols-[84px_1fr_36px] gap-2 rounded-2xl border-2 border-crust-200 p-2.5 md:grid-cols-[84px_110px_1fr_1fr_36px] md:border-0 md:p-0"
         >
           <input
             type="text"
@@ -54,9 +42,9 @@ export default function IngredientEditor({ ingredients, onChange, nameSuggestion
             onChange={(e) => {
               const v = e.target.value;
               const n = v === "" ? null : Number(v);
-              updateRow(row.id, { qty: Number.isFinite(n as number) || v === "" ? n : row.qty });
+              updateRow(row.id, { qty: v === "" || Number.isFinite(n as number) ? n : row.qty });
             }}
-            className="rounded-md border border-crust-200 px-2 py-1.5 text-sm focus:border-crust-500 focus:outline-none"
+            className="field !px-3"
           />
           <input
             type="text"
@@ -64,39 +52,35 @@ export default function IngredientEditor({ ingredients, onChange, nameSuggestion
             value={row.unit}
             onChange={(e) => updateRow(row.id, { unit: e.target.value })}
             list="unit-suggestions"
-            className="rounded-md border border-crust-200 px-2 py-1.5 text-sm focus:border-crust-500 focus:outline-none"
+            className="field !px-3"
           />
+          <button
+            type="button"
+            onClick={() => removeRow(row.id)}
+            className="grid h-12 w-9 place-items-center justify-self-end rounded-xl text-lg text-crust-400 active:bg-red-50 active:text-red-500 md:order-last"
+            aria-label="Remove ingredient"
+          >
+            ✕
+          </button>
           <input
             type="text"
             placeholder="ingredient name"
             value={row.name}
             onChange={(e) => updateRow(row.id, { name: e.target.value })}
             list="ingredient-name-suggestions"
-            className="col-span-2 rounded-md border border-crust-200 px-2 py-1.5 text-sm focus:border-crust-500 focus:outline-none sm:col-span-1"
+            className="field col-span-3 !px-3 md:col-span-1"
           />
           <input
             type="text"
             placeholder="note (optional)"
             value={row.note}
             onChange={(e) => updateRow(row.id, { note: e.target.value })}
-            className="rounded-md border border-crust-200 px-2 py-1.5 text-sm focus:border-crust-500 focus:outline-none"
+            className="field col-span-3 !px-3 md:col-span-1"
           />
-          <button
-            type="button"
-            onClick={() => removeRow(row.id)}
-            className="justify-self-end rounded-md px-2 py-1.5 text-crust-400 hover:bg-red-50 hover:text-red-500 sm:justify-self-auto"
-            aria-label="Remove ingredient"
-          >
-            ✕
-          </button>
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addRow}
-        className="rounded-lg border border-dashed border-crust-300 px-3 py-1.5 text-sm text-crust-600 hover:bg-crust-50"
-      >
+      <button type="button" onClick={addRow} className="dashed-btn">
         + Add ingredient
       </button>
 

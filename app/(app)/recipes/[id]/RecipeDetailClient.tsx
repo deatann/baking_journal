@@ -5,15 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Recipe } from "@/lib/types";
+import { categoryStyle } from "@/lib/categoryStyle";
 import ScaleCalculator from "@/components/ScaleCalculator";
+import PageHeader from "@/components/PageHeader";
 import RecipeForm, { RecipeFormValues } from "@/components/RecipeForm";
 
 export default function RecipeDetailClient({
   recipe,
   sourceImageUrl,
+  canEdit,
+  ownerName,
 }: {
   recipe: Recipe;
   sourceImageUrl: string | null;
+  canEdit: boolean;
+  ownerName: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -53,6 +59,16 @@ export default function RecipeDetailClient({
     setUserDensities((prev) => ({ ...prev, [ingredientKey]: gramsPerCup }));
   }
   const [deleting, setDeleting] = useState(false);
+  const [doneSteps, setDoneSteps] = useState<Set<number>>(new Set());
+
+  function toggleStep(i: number) {
+    setDoneSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
 
   async function handleUpdate(values: RecipeFormValues) {
     const supabase = createClient();
@@ -70,7 +86,6 @@ export default function RecipeDetailClient({
         oven_temp_c: values.oven_temp_c,
         tags: values.tags,
         notes: values.notes,
-        is_favorite: values.is_favorite,
       })
       .eq("id", recipe.id);
 
@@ -105,83 +120,84 @@ export default function RecipeDetailClient({
       oven_temp_c: recipe.oven_temp_c,
       tags: recipe.tags ?? [],
       notes: recipe.notes ?? "",
-      is_favorite: recipe.is_favorite,
     };
     return (
       <div className="max-w-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="font-display text-2xl font-bold text-crust-800">Edit recipe</h1>
-          <button
-            onClick={() => setEditing(false)}
-            className="text-sm text-crust-500 hover:text-crust-700"
-          >
+        <PageHeader title="Edit recipe" hand="tweak away">
+          <button onClick={() => setEditing(false)} className="text-sm font-extrabold text-crust-500 underline">
             Cancel
           </button>
-        </div>
+        </PageHeader>
         <RecipeForm initial={initial} submitLabel="Save changes" onSubmit={handleUpdate} />
       </div>
     );
   }
 
+  const { emoji } = categoryStyle(recipe.category);
+  const h2 = "mb-3 font-display text-xl font-bold text-ink";
+
   return (
     <div className="max-w-2xl">
-      <div className="mb-1 flex items-start justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-crust-800">
-          {recipe.is_favorite && "⭐ "}
+      <div className="mb-1 flex items-start gap-3 pl-[62px] md:pl-0">
+        <h1 className="min-w-0 flex-1 font-display text-[26px] font-bold leading-tight text-ink md:text-3xl">
+          <span className="mr-1">{emoji}</span>
           {recipe.title}
         </h1>
-        <div className="flex shrink-0 gap-2">
-          <button
-            onClick={() => setEditing(true)}
-            className="rounded-full border-2 border-crust-300 px-3 py-1.5 text-sm font-semibold text-crust-700 transition-transform hover:-translate-y-0.5 hover:bg-crust-100"
-          >
+        {canEdit && (
+          <button onClick={() => setEditing(true)} className="btn btn-ghost shrink-0 !px-4 !py-1.5 text-sm">
             Edit
           </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-          >
-            Delete
-          </button>
-        </div>
+        )}
       </div>
-      <p className="mb-4 text-xs uppercase tracking-wide text-crust-400">
+      <p className="text-[11px] font-extrabold uppercase tracking-wide text-crust-500">
         {recipe.category}
         {recipe.source_type === "scanned" && " · scanned"}
       </p>
+      <p className="mb-4 mt-1 text-[13px] font-bold text-crust-500">
+        Added by {canEdit ? "you" : ownerName}
+        {!canEdit && <span className="font-normal"> · only {ownerName} can edit this recipe</span>}
+      </p>
 
       {recipe.tags?.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1">
+        <div className="mb-4 flex flex-wrap gap-1.5">
           {recipe.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-crust-100 px-2 py-0.5 text-xs text-crust-600">
+            <span
+              key={tag}
+              className="rounded-full border-[1.5px] border-ink bg-peach-100 px-2.5 py-0.5 text-xs font-bold"
+            >
               {tag}
             </span>
           ))}
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-4 text-sm text-crust-600">
-        {recipe.prep_time_min && <span>Prep: {recipe.prep_time_min} min</span>}
-        {recipe.cook_time_min && <span>Bake: {recipe.cook_time_min} min</span>}
-        {recipe.oven_temp_c && <span>Oven: {recipe.oven_temp_c}°C</span>}
+      <div className="mb-5 flex flex-wrap gap-2 text-[13px] font-extrabold">
+        {recipe.prep_time_min ? (
+          <span className="rounded-full border-2 border-crust-200 bg-white px-3 py-1">Prep {recipe.prep_time_min} min</span>
+        ) : null}
+        {recipe.cook_time_min ? (
+          <span className="rounded-full border-2 border-crust-200 bg-white px-3 py-1">Bake {recipe.cook_time_min} min</span>
+        ) : null}
+        {recipe.oven_temp_c ? (
+          <span className="rounded-full border-2 border-crust-200 bg-white px-3 py-1">Oven {recipe.oven_temp_c}°C</span>
+        ) : null}
       </div>
 
       {sourceImageUrl && (
         <details className="mb-6">
-          <summary className="cursor-pointer text-sm text-crust-500 hover:text-crust-700">
+          <summary className="cursor-pointer text-sm font-bold text-crust-500">
             View original scanned screenshot
           </summary>
           <img
             src={sourceImageUrl}
             alt="Original scanned recipe"
-            className="mt-2 max-h-96 rounded-lg border border-crust-200 object-contain"
+            className="mt-2 max-h-96 rounded-2xl border-2 border-ink object-contain"
           />
         </details>
       )}
 
       <section className="mb-8">
-        <h2 className="mb-3 font-display text-lg font-bold text-crust-800">Scale &amp; ingredients</h2>
+        <h2 className={h2}>Scale &amp; ingredients</h2>
         <ScaleCalculator
           ingredients={recipe.ingredients}
           baseYieldQty={recipe.base_yield_qty}
@@ -193,12 +209,28 @@ export default function RecipeDetailClient({
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 font-display text-lg font-bold text-crust-800">Steps</h2>
+        <h2 className={h2}>Steps</h2>
         {recipe.steps.length > 0 ? (
-          <ol className="list-decimal space-y-2 pl-6 text-sm text-crust-700">
-            {recipe.steps.map((step, i) => (
-              <li key={i}>{step}</li>
-            ))}
+          <ol className="space-y-2.5">
+            {recipe.steps.map((step, i) => {
+              const done = doneSteps.has(i);
+              return (
+                <li
+                  key={i}
+                  onClick={() => toggleStep(i)}
+                  className={`flex cursor-pointer gap-3 text-[15px] leading-snug ${done ? "text-crust-400 line-through" : "text-ink"}`}
+                >
+                  <span
+                    className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 border-ink text-xs font-extrabold no-underline ${
+                      done ? "bg-sage-400" : "bg-butter-300"
+                    }`}
+                  >
+                    {done ? "✓" : i + 1}
+                  </span>
+                  <span className="pt-1">{step}</span>
+                </li>
+              );
+            })}
           </ol>
         ) : (
           <p className="text-sm text-crust-400">No steps recorded.</p>
@@ -207,17 +239,29 @@ export default function RecipeDetailClient({
 
       {recipe.notes && (
         <section className="mb-8">
-          <h2 className="mb-2 font-display text-lg font-bold text-crust-800">Notes</h2>
-          <p className="whitespace-pre-wrap text-sm text-crust-700">{recipe.notes}</p>
+          <h2 className={h2}>Notes</h2>
+          <p className="whitespace-pre-wrap text-[15px] text-crust-700">{recipe.notes}</p>
         </section>
       )}
 
       <Link
         href={`/journal/new?recipeId=${recipe.id}&scale=${currentFactor}`}
-        className="inline-block rounded-full bg-crust-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-crust-700 hover:shadow-md"
+        className="btn btn-primary w-full text-center sm:w-auto"
       >
         Log a bake of this (at ×{currentFactor})
       </Link>
+
+      {canEdit && (
+        <div className="mt-10 text-center">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs font-bold text-red-600 underline disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Delete recipe"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

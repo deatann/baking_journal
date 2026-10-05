@@ -46,3 +46,7 @@ export const ACCENT_CLASSES: Record<Accent, { strip: string; badge: string; text
   sky: { strip: "bg-sky-400", badge: "bg-sky-100 text-sky-700", text: "text-sky-600" },
   plum: { strip: "bg-plum-400", badge: "bg-plum-100 text-plum-700", text: "text-plum-600" },
 };
+
+export const DEFAULT_CATEGORIES = [
+  "bread", "brownies", "cakes", "cookies", "cupcakes", "donuts", "muffins", "pancakes", "pastry", "pie", "waffles",
+];

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import PhotoUploader, { UploadedPhoto } from "@/components/PhotoUploader";
+import PageHeader from "@/components/PageHeader";
 import StarRating from "@/components/StarRating";
 
 interface RecipeOption {
@@ -89,89 +90,78 @@ function NewBakeForm() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="mb-6 font-display text-2xl font-bold text-crust-800">Log a bake</h1>
+      <PageHeader title="Log bake" hand="what came out?" />
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-crust-700">Recipe</label>
-          <select
-            value={recipeId}
-            onChange={(e) => setRecipeId(e.target.value)}
-            className="w-full rounded-lg border border-crust-200 px-3 py-2 text-sm focus:border-crust-500 focus:outline-none"
-          >
-            <option value="">— Not from a saved recipe —</option>
-            {recipes.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {!recipeId && (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="card space-y-4 p-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-crust-700">What did you bake?</label>
-            <input
-              type="text"
-              value={freeTitle}
-              onChange={(e) => setFreeTitle(e.target.value)}
-              className="w-full rounded-lg border border-crust-200 px-3 py-2 text-sm focus:border-crust-500 focus:outline-none"
-              placeholder="One-off experiment, or a recipe you haven't saved yet"
+            <label className="label">Recipe</label>
+            <select value={recipeId} onChange={(e) => setRecipeId(e.target.value)} className="field">
+              <option value="">None - one-off</option>
+              {recipes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {!recipeId && (
+            <div>
+              <label className="label">What did you bake?</label>
+              <input
+                type="text"
+                value={freeTitle}
+                onChange={(e) => setFreeTitle(e.target.value)}
+                className="field"
+                placeholder="One-off experiment, or a recipe you haven't saved"
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Date</label>
+              <input type="date" value={bakedOn} onChange={(e) => setBakedOn(e.target.value)} className="field" />
+            </div>
+            <div>
+              <label className="label">Scale used</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={scaleFactor}
+                onChange={(e) => setScaleFactor(e.target.value)}
+                className="field"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="label">Rating</label>
+            <StarRating value={rating} onChange={setRating} />
+          </div>
+
+          <div>
+            <label className="label">Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="field resize-y"
+              placeholder="How did it turn out? What would you change next time?"
             />
           </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-crust-700">Date</label>
-            <input
-              type="date"
-              value={bakedOn}
-              onChange={(e) => setBakedOn(e.target.value)}
-              className="w-full rounded-lg border border-crust-200 px-3 py-2 text-sm focus:border-crust-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-crust-700">Scale used</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={scaleFactor}
-              onChange={(e) => setScaleFactor(e.target.value)}
-              className="w-full rounded-lg border border-crust-200 px-3 py-2 text-sm focus:border-crust-500 focus:outline-none"
-            />
-          </div>
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-crust-700">Rating</label>
-          <StarRating value={rating} onChange={setRating} />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-crust-700">Notes</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            className="w-full resize-y rounded-lg border border-crust-200 px-3 py-2 text-sm focus:border-crust-500 focus:outline-none"
-            placeholder="How did it turn out? What would you change next time?"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-crust-700">Photos</label>
+        <div className="card p-4">
+          <label className="label">Photos</label>
           <PhotoUploader photos={photos} onChange={setPhotos} bucket="bake-photos" />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm font-bold text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-full bg-crust-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-crust-700 hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0"
-        >
-          {saving ? "Saving..." : "Save journal entry"}
+        <button type="submit" disabled={saving} className="btn btn-primary w-full sm:w-auto">
+          {saving ? "Saving..." : "Save bake"}
         </button>
       </form>
     </div>

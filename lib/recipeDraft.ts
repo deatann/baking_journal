@@ -17,14 +17,13 @@ export function saveRecipeDraft(parsed: ParsedRecipe, sourceImagePath: string | 
           : [{ id: newIngredientId(), name: "", qty: null, unit: "", note: "" }],
       steps: parsed.steps.length > 0 ? parsed.steps : [""],
       prep_time_min: null,
-      cook_time_min: null,
-      oven_temp_c: null,
+      cook_time_min: parsed.bakeTimeMin ?? null,
+      oven_temp_c: parsed.ovenTempC ?? null,
       tags: [],
       notes:
         parsed.unparsedLines.length > 0
           ? `Lines the parser couldn't place - check these:\n${parsed.unparsedLines.join("\n")}`
           : "",
-      is_favorite: false,
     },
     sourceImagePath,
   };

@@ -2,40 +2,48 @@ import Link from "next/link";
 import { Recipe } from "@/lib/types";
 import { categoryStyle, ACCENT_CLASSES } from "@/lib/categoryStyle";
 
-export default function RecipeCard({ recipe }: { recipe: Recipe }) {
+export default function RecipeCard({ recipe, byName }: { recipe: Recipe; byName?: string }) {
   const { emoji, accent } = categoryStyle(recipe.category);
   const classes = ACCENT_CLASSES[accent];
+  const tags = recipe.tags ?? [];
+  const shown = tags.slice(0, 2);
+  const more = tags.length - shown.length;
 
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="group relative block overflow-hidden rounded-2xl border-2 border-crust-200 bg-white p-4 pt-5 shadow-sm transition-all hover:-translate-y-1 hover:rotate-1 hover:shadow-lg"
+      className="relative block overflow-hidden rounded-[20px] border-[2.5px] border-ink bg-white px-4 pb-3.5 pt-5 shadow-pop transition-transform active:scale-[0.98] md:hover:-translate-y-0.5"
     >
-      <span className={`absolute left-0 top-0 h-2 w-full ${classes.strip}`} />
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="font-display text-lg font-bold text-crust-800 group-hover:text-crust-600">
-          <span className="mr-1">{emoji}</span>
-          {recipe.title}
-        </h2>
-        {recipe.is_favorite && <span title="Favorite">⭐</span>}
-      </div>
-      <p className={`mt-1 text-xs font-semibold uppercase tracking-wide ${classes.text}`}>
+      <span className={`absolute left-0 top-0 h-2.5 w-full border-b-[2.5px] border-ink ${classes.strip}`} />
+      <h2 className="font-display text-[19px] font-bold leading-tight text-ink">
+        <span className="mr-1">{emoji}</span>
+        {recipe.title}
+      </h2>
+      <p className={`mt-0.5 text-[11px] font-extrabold uppercase tracking-wide ${classes.text}`}>
         {recipe.category}
         {recipe.source_type === "scanned" && " · scanned"}
+        {byName && (
+          <span className="font-bold normal-case tracking-normal text-crust-500"> · by {byName}</span>
+        )}
       </p>
-      {recipe.tags?.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {recipe.tags.map((tag) => (
+      {tags.length > 0 && (
+        <div className="mt-2.5 flex flex-nowrap gap-1.5 overflow-hidden">
+          {shown.map((tag) => (
             <span
               key={tag}
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${classes.badge}`}
+              className="shrink-0 rounded-full border-[1.5px] border-ink bg-peach-100 px-2.5 py-0.5 text-[11px] font-bold"
             >
               {tag}
             </span>
           ))}
+          {more > 0 && (
+            <span className="shrink-0 rounded-full border-[1.5px] border-crust-300 bg-white px-2.5 py-0.5 text-[11px] font-bold text-crust-500">
+              +{more}
+            </span>
+          )}
         </div>
       )}
-      <p className="mt-3 text-sm text-crust-500">
+      <p className="mt-2.5 text-[13px] text-crust-500">
         {recipe.ingredients?.length ?? 0} ingredients
         {recipe.base_yield_qty ? ` · yields ${recipe.base_yield_qty} ${recipe.base_yield_unit ?? ""}` : ""}
       </p>
