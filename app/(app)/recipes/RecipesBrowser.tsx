@@ -10,11 +10,13 @@ const tagKey = (t: string) => `t:${t.trim().toLowerCase()}`;
 
 export default function RecipesBrowser({
   recipes,
-  owners,
+  people,
+  covers,
   meId,
 }: {
   recipes: Recipe[];
-  owners: Record<string, string>;
+  people: Record<string, { name: string; avatarUrl: string | null }>;
+  covers: Record<string, string>;
   meId: string;
 }) {
   const [query, setQuery] = useState("");
@@ -122,7 +124,9 @@ export default function RecipesBrowser({
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              byName={recipe.user_id === meId ? undefined : owners[recipe.user_id] ?? "Someone"}
+              coverUrl={covers[recipe.id] ?? null}
+              by={recipe.user_id === meId ? undefined : people[recipe.user_id] ?? { name: "Someone", avatarUrl: null }}
+              showPublic={recipe.user_id === meId && recipe.is_public}
             />
           ))}
         </div>

@@ -20,6 +20,8 @@ const EMPTY: RecipeFormValues = {
   oven_temp_c: null,
   tags: [],
   notes: "",
+  cover_path: null,
+  is_public: false,
 };
 
 export default function NewRecipePage() {
@@ -76,6 +78,8 @@ function NewRecipeForm() {
         notes: values.notes,
         source_type: sourceImagePath ? "scanned" : "manual",
         source_image_path: sourceImagePath,
+        cover_path: values.cover_path,
+        is_public: values.is_public,
       })
       .select("id")
       .single();

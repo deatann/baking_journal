@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Bake } from "@/lib/types";
-import { getMeCached } from "@/lib/session";
+import { getViewerCached } from "@/lib/session";
 import { categoryStyle } from "@/lib/categoryStyle";
 import { JOURNAL_PAGE_SIZE } from "@/lib/journalConfig";
 import JournalBrowser, { JournalItem, Person } from "./JournalBrowser";
@@ -10,8 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function JournalPage() {
   const supabase = createClient();
 
-  const [session, { data, error }, { data: recipeRows }] = await Promise.all([
-    getMeCached(),
+  const [viewer, { data, error }, { data: recipeRows }] = await Promise.all([
+    getViewerCached(),
     supabase
       .from("bakes")
       .select("*")
@@ -44,8 +44,9 @@ export default async function JournalPage() {
   const categoryById = new Map<string, string>();
   for (const r of (recipeRows ?? []) as { id: string; category: string }[]) categoryById.set(r.id, r.category);
 
-  const profiles = session?.profiles ?? {};
-  const meId = session?.me.id ?? "";
+  const profiles = viewer.profiles;
+  const meId = viewer.me?.id ?? "";
+  const isGuest = !viewer.me;
 
   const items: JournalItem[] = bakes.map((b) => {
     const p = profiles[b.user_id];
@@ -54,7 +55,8 @@ export default async function JournalPage() {
       userId: b.user_id,
       who: p?.name ?? "Someone",
       whoAvatar: p?.avatarUrl ?? null,
-      recipeId: b.recipe_id,
+      recipeId: b.recipe_id && categoryById.has(b.recipe_id) ? b.recipe_id : null, // guests only get links to recipes they can open
+      isPublic: !!b.is_public,
       title: b.recipe_title_snapshot || "Untitled bake",
       bakedOn: b.baked_on,
       scale: b.scale_factor,
@@ -73,5 +75,5 @@ export default async function JournalPage() {
     avatarUrl: profiles[id]?.avatarUrl ?? null,
   }));
 
-  return <JournalBrowser items={items} people={people} meId={meId} initialUrls={initialUrls} />;
+  return <JournalBrowser items={items} people={people} meId={meId} isGuest={isGuest} initialUrls={initialUrls} />;
 }

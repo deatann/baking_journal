@@ -15,7 +15,7 @@ import "./globals.css";
 // in globals.css.
 
 export const metadata: Metadata = {
-  title: "Baking Journal",
+  title: { default: "Baking Journal", template: "%s · Baking Journal" },
   description: "Our family recipes, scaling calculator, and baking log.",
   applicationName: "Baking Journal",
   icons: {

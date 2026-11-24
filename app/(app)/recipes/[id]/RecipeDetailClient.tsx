@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Recipe } from "@/lib/types";
-import { categoryStyle } from "@/lib/categoryStyle";
+import { categoryStyle, ACCENT_CLASSES } from "@/lib/categoryStyle";
 import ScaleCalculator from "@/components/ScaleCalculator";
 import PageHeader from "@/components/PageHeader";
 import RecipeForm, { RecipeFormValues } from "@/components/RecipeForm";
@@ -15,11 +15,15 @@ export default function RecipeDetailClient({
   sourceImageUrl,
   canEdit,
   ownerName,
+  isGuest,
+  coverUrl,
 }: {
   recipe: Recipe;
   sourceImageUrl: string | null;
   canEdit: boolean;
   ownerName: string;
+  isGuest: boolean;
+  coverUrl: string | null;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -27,6 +31,7 @@ export default function RecipeDetailClient({
   const [userDensities, setUserDensities] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    if (isGuest) return; // conversions are personal to signed-in users
     const supabase = createClient();
     supabase
       .from("ingredient_densities")
@@ -37,7 +42,7 @@ export default function RecipeDetailClient({
         for (const row of data) map[row.ingredient_key] = Number(row.grams_per_cup);
         setUserDensities(map);
       });
-  }, []);
+  }, [isGuest]);
 
   async function handleSaveDensity(ingredientKey: string, gramsPerCup: number) {
     const supabase = createClient();
@@ -86,6 +91,8 @@ export default function RecipeDetailClient({
         oven_temp_c: values.oven_temp_c,
         tags: values.tags,
         notes: values.notes,
+        cover_path: values.cover_path,
+        is_public: values.is_public,
       })
       .eq("id", recipe.id);
 
@@ -120,6 +127,8 @@ export default function RecipeDetailClient({
       oven_temp_c: recipe.oven_temp_c,
       tags: recipe.tags ?? [],
       notes: recipe.notes ?? "",
+      cover_path: recipe.cover_path ?? null,
+      is_public: !!recipe.is_public,
     };
     return (
       <div className="max-w-2xl">
@@ -128,17 +137,24 @@ export default function RecipeDetailClient({
             Cancel
           </button>
         </PageHeader>
-        <RecipeForm initial={initial} submitLabel="Save changes" onSubmit={handleUpdate} />
+        <RecipeForm initial={initial} submitLabel="Save changes" onSubmit={handleUpdate} initialCoverUrl={coverUrl} />
       </div>
     );
   }
 
-  const { emoji } = categoryStyle(recipe.category);
+  const { emoji, accent } = categoryStyle(recipe.category);
   const h2 = "mb-3 font-display text-xl font-bold text-ink";
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-3 flex min-h-[56px] items-center gap-3 pl-[62px] md:min-h-0 md:pl-0">
+      <div className="mb-4 aspect-[4/3] w-full overflow-hidden rounded-[20px] border-[1.5px] border-line shadow-pop">
+        {coverUrl ? (
+          <img src={coverUrl} alt={recipe.title} className="h-full w-full object-cover" />
+        ) : (
+          <div className={`grid h-full w-full place-items-center text-7xl ${ACCENT_CLASSES[accent].tile}`}>{emoji}</div>
+        )}
+      </div>
+      <div className="mb-3 flex items-center gap-3">
         <h1 className="min-w-0 flex-1 font-display text-[26px] font-bold leading-tight text-ink md:text-3xl">
           <span className="mr-1">{emoji}</span>
           {recipe.title}
@@ -155,7 +171,12 @@ export default function RecipeDetailClient({
       </p>
       <p className="mb-4 mt-1 text-[13px] font-bold text-crust-500">
         Added by {canEdit ? "you" : ownerName}
-        {!canEdit && <span className="font-normal"> · only {ownerName} can edit this recipe</span>}
+        {!canEdit && !isGuest && <span className="font-normal"> · only {ownerName} can edit this recipe</span>}
+        {canEdit && recipe.is_public && (
+          <span className="ml-2 rounded-full border-[1.5px] border-line bg-sage-100 px-2 py-0.5 text-[11px] font-extrabold text-sage-700">
+            Public
+          </span>
+        )}
       </p>
 
       {recipe.tags?.length > 0 && (
@@ -204,7 +225,7 @@ export default function RecipeDetailClient({
           baseYieldUnit={recipe.base_yield_unit}
           onScaleChange={setCurrentFactor}
           userDensities={userDensities}
-          onSaveDensity={handleSaveDensity}
+          onSaveDensity={isGuest ? undefined : handleSaveDensity}
         />
       </section>
 
@@ -244,12 +265,14 @@ export default function RecipeDetailClient({
         </section>
       )}
 
+      {!isGuest && (
       <Link
         href={`/journal/new?recipeId=${recipe.id}&scale=${currentFactor}`}
         className="btn btn-primary w-full text-center sm:w-auto"
       >
         Log a bake of this (at ×{currentFactor})
       </Link>
+      )}
 
       {canEdit && (
         <div className="mt-10 text-center">

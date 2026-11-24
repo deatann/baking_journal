@@ -21,7 +21,10 @@ const ADD_OPTIONS = [
 
 const NAV_ICON = "h-[26px] w-[26px] fill-none stroke-current";
 
-export default function AppShell({ me, children }: { me: ShellMe; children: React.ReactNode }) {
+const GUEST_NAME = "Baking Journal";
+
+export default function AppShell({ me, children }: { me: ShellMe | null; children: React.ReactNode }) {
+  const isGuest = !me;
   const pathname = usePathname();
   const router = useRouter();
   const [addOpen, setAddOpen] = useState(false);
@@ -29,11 +32,11 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
   const [profileOpen, setProfileOpen] = useState(false);
   const [hideAvatar, setHideAvatar] = useState(false);
 
-  const newActive =
+  const newActive = !isGuest && (
     pathname.startsWith("/import") ||
     pathname.startsWith("/scan") ||
     pathname === "/journal/new" ||
-    pathname === "/recipes/new";
+    pathname === "/recipes/new");
   const recipesActive = pathname.startsWith("/recipes") && pathname !== "/recipes/new";
   const journalActive = pathname.startsWith("/journal") && pathname !== "/journal/new";
 
@@ -63,11 +66,41 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/recipes");
     router.refresh();
   }
 
-  const accountMenu = (
+  const loginHref = `/login?next=${encodeURIComponent(pathname)}`;
+  const avatar = (size: number) =>
+    me ? (
+      <Avatar name={me.name} url={me.avatarUrl} size={size} />
+    ) : (
+      <Avatar name={GUEST_NAME} url="/icons/favicon-64.png" size={size} />
+    );
+
+  const guestMenu = (
+    <div className="absolute z-40 min-w-[210px] animate-drop rounded-2xl border-[1.5px] border-line bg-white p-1.5 shadow-pop">
+      <div className="mb-1 border-b border-dashed border-crust-200 px-3 pb-2 pt-1.5 text-xs font-bold text-crust-500">
+        Guest view
+      </div>
+      <Link
+        href="/about"
+        onClick={() => setMenuOpen(false)}
+        className="block w-full rounded-lg px-3 py-2 text-left text-sm font-extrabold text-crust-600 hover:bg-peach-100"
+      >
+        About this book
+      </Link>
+      <Link
+        href={loginHref}
+        onClick={() => setMenuOpen(false)}
+        className="block w-full rounded-lg px-3 py-2 text-left text-sm font-extrabold text-crust-600 hover:bg-peach-100"
+      >
+        Family sign in
+      </Link>
+    </div>
+  );
+
+  const accountMenu = !me ? guestMenu : (
     <div className="absolute z-40 min-w-[190px] animate-drop rounded-2xl border-[1.5px] border-line bg-white p-1.5 shadow-pop">
       <div className="mb-1 border-b border-dashed border-crust-200 px-3 pb-2 pt-1.5 text-xs font-bold text-crust-500">
         Signed in as
@@ -82,6 +115,13 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
       >
         Edit profile &amp; chibi
       </button>
+      <Link
+        href="/about"
+        onClick={() => setMenuOpen(false)}
+        className="block w-full rounded-lg px-3 py-2 text-left text-sm font-extrabold text-crust-600 hover:bg-peach-100"
+      >
+        About this book
+      </Link>
       <button
         className="block w-full rounded-lg px-3 py-2 text-left text-sm font-extrabold text-crust-600 hover:bg-peach-100"
         onClick={signOut}
@@ -138,10 +178,10 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
                 setAddOpen(false);
                 setMenuOpen((v) => !v);
               }}
-              aria-label="Account menu"
+              aria-label={isGuest ? "Menu" : "Account menu"}
               className="press block rounded-full transition-transform hover:-rotate-6 hover:scale-105"
             >
-              <Avatar name={me.name} url={me.avatarUrl} size={44} />
+              {avatar(44)}
             </button>
             <Link href="/recipes" className="font-display text-[22px] font-bold text-crust-600">
               Baking Journal
@@ -152,19 +192,29 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             <Link href="/recipes" className={navBtn(recipesActive)}>
               Recipes
             </Link>
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                setAddOpen((v) => !v);
-              }}
-              className={navBtn(newActive || addOpen)}
-            >
-              New ▾
-            </button>
+            {!isGuest && (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  setAddOpen((v) => !v);
+                }}
+                className={navBtn(newActive || addOpen)}
+              >
+                New ▾
+              </button>
+            )}
             <Link href="/journal" className={navBtn(journalActive)}>
               Journal
             </Link>
-            {addOpen && (
+            {isGuest && (
+              <Link
+                href={loginHref}
+                className="press ml-2 rounded-full border-[1.5px] border-line bg-butter-300 px-4 py-1.5 text-sm font-extrabold text-ink"
+              >
+                Family sign in
+              </Link>
+            )}
+            {!isGuest && addOpen && (
               <div className="absolute right-16 top-14 z-40 w-80 animate-drop rounded-3xl border-[1.5px] border-line bg-white p-2.5 shadow-pop">
                 {addList}
               </div>
@@ -185,16 +235,16 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             setAddOpen(false);
             setMenuOpen((v) => !v);
           }}
-          aria-label="Account menu"
+          aria-label={isGuest ? "Menu" : "Account menu"}
           className="press block rounded-full"
         >
-          <Avatar name={me.name} url={me.avatarUrl} size={48} />
+          {avatar(48)}
         </button>
         {menuOpen && <div className="absolute left-0 top-14">{accountMenu}</div>}
       </div>
 
       {/* ---------- phone: + menu and bottom bar ---------- */}
-      {addOpen && (
+      {!isGuest && addOpen && (
         <div
           className="fixed left-1/2 z-40 w-[min(calc(100%-28px),340px)] -translate-x-1/2 animate-pop rounded-3xl border-[1.5px] border-line bg-white p-2.5 shadow-pop md:hidden"
           style={{ bottom: "calc(98px + env(safe-area-inset-bottom))" }}
@@ -219,6 +269,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             <path d="M10 19.5v-5h4v5" />
           </svg>
         </Link>
+        {!isGuest && (
         <button
           aria-label="Add"
           onClick={() => {
@@ -238,6 +289,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
             <path d="M12 5v14M5 12h14" />
           </svg>
         </button>
+        )}
         <Link
           href="/journal"
           aria-label="Journal"
@@ -254,7 +306,7 @@ export default function AppShell({ me, children }: { me: ShellMe; children: Reac
 
       <main className="mx-auto max-w-5xl px-4 pb-40 pt-4 sm:px-6 md:pb-16 md:pt-24">{children}</main>
 
-      {profileOpen && <ProfileSheet me={me} onClose={() => setProfileOpen(false)} />}
+      {me && profileOpen && <ProfileSheet me={me} onClose={() => setProfileOpen(false)} />}
     </>
   );
 }

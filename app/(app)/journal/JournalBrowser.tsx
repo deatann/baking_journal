@@ -23,6 +23,7 @@ export interface JournalItem {
   notes: string;
   photoPaths: string[];
   emoji: string;
+  isPublic: boolean;
 }
 
 export interface Person {
@@ -47,14 +48,17 @@ export default function JournalBrowser({
   items,
   people,
   meId,
+  isGuest,
   initialUrls,
 }: {
   items: JournalItem[];
   people: Person[];
   meId: string;
+  isGuest: boolean;
   initialUrls: Record<string, string>;
 }) {
   const router = useRouter();
+  const [publicOverride, setPublicOverride] = useState<Record<string, boolean>>({});
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [who, setWho] = useState<string>("all");
@@ -132,6 +136,17 @@ export default function JournalBrowser({
     router.refresh();
   }
 
+  async function togglePublic(bake: JournalItem) {
+    const next = !(publicOverride[bake.id] ?? bake.isPublic);
+    setMenuFor(null);
+    setPublicOverride((prev) => ({ ...prev, [bake.id]: next }));
+    const { error } = await createClient().from("bakes").update({ is_public: next }).eq("id", bake.id);
+    if (error) {
+      setPublicOverride((prev) => ({ ...prev, [bake.id]: !next }));
+      alert(`Couldn't change sharing: ${error.message}`);
+    }
+  }
+
   const filtering = who !== "all" || query.trim() !== "";
 
   return (
@@ -139,10 +154,15 @@ export default function JournalBrowser({
       <PageHeader title="Journal" hand="every bake, remembered" />
 
       {live.length === 0 ? (
-        <EmptyState title="No bakes yet" text="Tap + and choose Log bake to add the first one.">
-          <Link href="/journal/new" className="btn btn-primary mt-2">
-            Log bake
-          </Link>
+        <EmptyState
+          title={isGuest ? "Nothing shared yet" : "No bakes yet"}
+          text={isGuest ? "Check back soon. The family hasn't shared any bakes yet." : "Tap + and choose Log bake to add the first one."}
+        >
+          {!isGuest && (
+            <Link href="/journal/new" className="btn btn-primary mt-2">
+              Log bake
+            </Link>
+          )}
         </EmptyState>
       ) : (
         <>
@@ -212,7 +232,8 @@ export default function JournalBrowser({
           ) : (
             <div className="-mx-4 grid grid-cols-1 gap-5 sm:-mx-6 md:mx-0 md:grid-cols-[repeat(auto-fit,minmax(240px,280px))] md:justify-center md:gap-6">
               {visible.map((bake, idx) => {
-                const own = bake.userId === meId;
+                const own = !isGuest && bake.userId === meId;
+                const isPublic = publicOverride[bake.id] ?? bake.isPublic;
                 const urls = bake.photoPaths.map(urlFor).filter((u): u is string => !!u);
                 return (
                   <article
@@ -258,6 +279,11 @@ export default function JournalBrowser({
                               ×{bake.scale}
                             </span>
                           )}
+                          {own && isPublic && (
+                            <span className="rounded-full border-[1.5px] border-line bg-sage-100 px-2 py-0.5 text-[11px] font-extrabold text-sage-700">
+                              Public
+                            </span>
+                          )}
                           {own && (
                             <button
                               type="button"
@@ -276,6 +302,14 @@ export default function JournalBrowser({
 
                       {own && menuFor === bake.id && (
                         <div className="absolute right-3 top-14 z-20 animate-drop overflow-hidden rounded-2xl border-[1.5px] border-line bg-white shadow-pop">
+                          <button
+                            type="button"
+                            onClick={() => togglePublic(bake)}
+                            className="press flex w-full items-center gap-2 border-b border-dashed border-crust-200 px-5 py-3 text-left text-sm font-extrabold text-crust-600 active:bg-peach-100"
+                          >
+                            <span aria-hidden>{isPublic ? "🔒" : "🌐"}</span>{" "}
+                            {isPublic ? "Make private" : "Share on guest page"}
+                          </button>
                           <button
                             type="button"
                             onClick={() => {

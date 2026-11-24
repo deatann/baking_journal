@@ -22,6 +22,8 @@ export interface Recipe {
   notes: string;
   source_type: "manual" | "scanned";
   source_image_path: string | null;
+  cover_path: string | null;
+  is_public: boolean;
   is_favorite?: boolean; // legacy column, no longer used by the app
   created_at: string;
   updated_at: string;
@@ -37,6 +39,7 @@ export interface Bake {
   rating: number | null;
   notes: string;
   photo_paths: string[];
+  is_public: boolean;
   created_at: string;
 }
 

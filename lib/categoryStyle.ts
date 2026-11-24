@@ -39,12 +39,12 @@ export function categoryStyle(category: string | null | undefined): { emoji: str
 
 // Tailwind can't see dynamically-built class strings, so every accent's
 // classes are spelled out here in full and looked up by name.
-export const ACCENT_CLASSES: Record<Accent, { strip: string; badge: string; text: string }> = {
-  berry: { strip: "bg-berry-400", badge: "bg-berry-100 text-berry-700", text: "text-berry-600" },
-  sage: { strip: "bg-sage-400", badge: "bg-sage-100 text-sage-700", text: "text-sage-600" },
-  mustard: { strip: "bg-mustard-400", badge: "bg-mustard-100 text-mustard-700", text: "text-mustard-600" },
-  sky: { strip: "bg-sky-400", badge: "bg-sky-100 text-sky-700", text: "text-sky-600" },
-  plum: { strip: "bg-plum-400", badge: "bg-plum-100 text-plum-700", text: "text-plum-600" },
+export const ACCENT_CLASSES: Record<Accent, { strip: string; badge: string; text: string; tile: string }> = {
+  berry: { strip: "bg-berry-400", badge: "bg-berry-100 text-berry-700", text: "text-berry-600", tile: "bg-berry-100" },
+  sage: { strip: "bg-sage-400", badge: "bg-sage-100 text-sage-700", text: "text-sage-600", tile: "bg-sage-100" },
+  mustard: { strip: "bg-mustard-400", badge: "bg-mustard-100 text-mustard-700", text: "text-mustard-600", tile: "bg-mustard-100" },
+  sky: { strip: "bg-sky-400", badge: "bg-sky-100 text-sky-700", text: "text-sky-600", tile: "bg-sky-100" },
+  plum: { strip: "bg-plum-400", badge: "bg-plum-100 text-plum-700", text: "text-plum-600", tile: "bg-plum-100" },
 };
 
 export const DEFAULT_CATEGORIES = [

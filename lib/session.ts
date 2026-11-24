@@ -29,5 +29,14 @@ export async function getMe(
   return { me, profiles };
 }
 
+/** Like getMeCached, but guests get me=null plus the profiles of people who shared something. */
+export const getViewerCached = cache(
+  async (): Promise<{ me: Me | null; profiles: Record<string, PublicProfile> }> => {
+    const s = await getMeCached();
+    if (s) return s;
+    return { me: null, profiles: await loadProfiles(createClient()) };
+  },
+);
+
 /** One lookup per request, shared by the layout and the page (React cache). */
 export const getMeCached = cache(async () => getMe(createClient()));

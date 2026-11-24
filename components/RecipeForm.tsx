@@ -7,6 +7,8 @@ import { COMMON_INGREDIENTS } from "@/lib/commonIngredients";
 import { DEFAULT_CATEGORIES } from "@/lib/categoryStyle";
 import IngredientEditor from "./IngredientEditor";
 import StepsEditor from "./StepsEditor";
+import CoverPhotoField from "./CoverPhotoField";
+import ShareSwitch from "./ShareSwitch";
 
 export interface RecipeFormValues {
   title: string;
@@ -20,6 +22,8 @@ export interface RecipeFormValues {
   oven_temp_c: number | null;
   tags: string[];
   notes: string;
+  cover_path: string | null;
+  is_public: boolean;
 }
 
 interface Props {
@@ -27,11 +31,13 @@ interface Props {
   submitLabel: string;
   onSubmit: (values: RecipeFormValues) => Promise<void>;
   extraTopContent?: React.ReactNode;
+  initialCoverUrl?: string | null;
 }
 
 const normTag = (t: string) => t.trim().toLowerCase().replace(/\s+/g, " ");
 
-export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopContent }: Props) {
+export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopContent, initialCoverUrl = null }: Props) {
+  const [coverPreview, setCoverPreview] = useState<string | null>(initialCoverUrl);
   const [values, setValues] = useState<RecipeFormValues>({
     ...initial,
     tags: initial.tags.map(normTag).filter(Boolean),
@@ -113,6 +119,23 @@ export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopCon
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {extraTopContent}
+
+      <div className="card space-y-4 p-4">
+        <CoverPhotoField
+          previewUrl={coverPreview}
+          category={values.category}
+          onChange={(path, url) => {
+            set("cover_path", path);
+            setCoverPreview(url);
+          }}
+        />
+        <ShareSwitch
+          checked={values.is_public}
+          onChange={(v) => set("is_public", v)}
+          label="Share on the guest page"
+          hint="Anyone with the link can see this recipe, your name and the cover photo. The original screenshot stays private."
+        />
+      </div>
 
       <div className="card space-y-4 p-4">
         <div>

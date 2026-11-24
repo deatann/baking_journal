@@ -12,7 +12,7 @@ interface Props {
   baseYieldUnit: string | null;
   onScaleChange?: (factor: number) => void;
   userDensities: Record<string, number>;
-  onSaveDensity: (ingredientKey: string, gramsPerCup: number) => Promise<void>;
+  onSaveDensity?: (ingredientKey: string, gramsPerCup: number) => Promise<void>;
 }
 
 const CONFIDENCE_STYLE: Record<string, string> = {
@@ -168,7 +168,7 @@ function ConversionLine({
   qty: number | null;
   unit: string;
   userDensities: Record<string, number>;
-  onSaveDensity: (ingredientKey: string, gramsPerCup: number) => Promise<void>;
+  onSaveDensity?: (ingredientKey: string, gramsPerCup: number) => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState("");
@@ -181,6 +181,7 @@ function ConversionLine({
   if (result.kind === "none") return null;
 
   if (result.kind === "unknown") {
+    if (!onSaveDensity) return null; // guests can't set their own conversions
     if (!editing) {
       return (
         <button
@@ -200,7 +201,7 @@ function ConversionLine({
           const grams = Number(input);
           if (!Number.isFinite(grams) || grams <= 0) return;
           setSaving(true);
-          await onSaveDensity(result.ingredientKey, grams);
+          await onSaveDensity?.(result.ingredientKey, grams);
           setSaving(false);
           setEditing(false);
         }}
@@ -241,7 +242,7 @@ function ConversionLine({
       <span className="text-[11px] text-crust-400">
         {result.source === "user" ? "your measurement" : CONFIDENCE_LABEL[result.confidence]}
       </span>
-      {result.source === "default" && (
+      {result.source === "default" && onSaveDensity && (
         <button
           type="button"
           onClick={() => setEditing(true)}
@@ -258,7 +259,7 @@ function ConversionLine({
             const grams = Number(input);
             if (!Number.isFinite(grams) || grams <= 0) return;
             setSaving(true);
-            await onSaveDensity(densityKey(name), grams);
+            await onSaveDensity?.(densityKey(name), grams);
             setSaving(false);
             setEditing(false);
           }}

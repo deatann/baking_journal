@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import PhotoUploader, { UploadedPhoto } from "@/components/PhotoUploader";
 import PageHeader from "@/components/PageHeader";
 import StarRating from "@/components/StarRating";
+import ShareSwitch from "@/components/ShareSwitch";
 
 interface RecipeOption {
   id: string;
@@ -32,6 +33,7 @@ function NewBakeForm() {
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+  const [isPublic, setIsPublic] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +79,7 @@ function NewBakeForm() {
         rating,
         notes,
         photo_paths: photos.map((p) => p.path),
+        is_public: isPublic,
       });
       if (insertError) throw insertError;
 
@@ -156,6 +159,15 @@ function NewBakeForm() {
         <div className="card p-4">
           <label className="label">Photos</label>
           <PhotoUploader photos={photos} onChange={setPhotos} bucket="bake-photos" />
+        </div>
+
+        <div className="card p-4">
+          <ShareSwitch
+            checked={isPublic}
+            onChange={setIsPublic}
+            label="Share on the guest page"
+            hint="Anyone can see this bake, your name and its photos. You can change this later from the ⋯ menu."
+          />
         </div>
 
         {error && <p className="text-sm font-bold text-red-600">{error}</p>}

@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+// Guests can browse everything except the pages that create or change things.
+const LOGIN_ONLY = [/^\/import(\/|$)/, /^\/scan(\/|$)/, /^\/recipes\/new(\/|$)/, /^\/journal\/new(\/|$)/];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -31,10 +32,9 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
-  const isApi = path.startsWith("/api");
+  const needsLogin = LOGIN_ONLY.some((re) => re.test(path));
 
-  if (!user && !isPublic && !isApi) {
+  if (!user && needsLogin) {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("next", path);
     return NextResponse.redirect(redirectUrl);

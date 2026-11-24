@@ -71,3 +71,14 @@ Optional: add a `CRON_SECRET` environment variable in Vercel to reject calls tha
 - Chibis are stored in a public bucket (anyone with the image URL can view it).
 - AI scanning shares one Gemini free-tier quota across all five people.
 - The local fallback parser (used if AI fails) does not extract bake time or temperature.
+
+## Guest mode (public view) and cover photos
+
+The front page is now a read-only guest view. Family members sign in with "Family sign in" (chibi menu, or the button on desktop).
+
+1. **Before deploying**, run `supabase/migration_guest_mode.sql` in the Supabase SQL editor (after `migration_shared_book.sql`). It adds `is_public` / `cover_path` columns, the signed-out read rules, and the public `recipe-covers` bucket. Deploying the new code first makes recipe saves fail because the columns don't exist yet.
+2. Everything is private by default. Owners switch on "Share on the guest page" per recipe (recipe form) and per bake (Log bake form, or the ⋯ menu on a journal card).
+3. Guests never see: the original recipe screenshots, private recipes/bakes, or anything behind sign-in (/recipes/new, /import, /scan, /journal/new).
+4. Search engines: public recipes and /about are indexable (see /sitemap.xml). The journal is marked noindex.
+5. Optional: set `NEXT_PUBLIC_SITE_URL` in Vercel if the production URL changes (used by the sitemap).
+6. Cover photos are public by design (random file names). Removing a cover from a recipe does not delete the old file from storage.
