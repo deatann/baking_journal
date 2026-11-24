@@ -58,6 +58,12 @@ Push to GitHub (`git add . && git commit -m "..." && git push`). Vercel redeploy
 
 No offline mode in this version; it needs a connection.
 
+## Keeping the free Supabase project awake
+
+`vercel.json` runs `/api/keepalive` once a day (09:00 UTC) on Vercel, which runs one small database query so the
+project is not paused for inactivity. Nothing to set up. Check it under Vercel -> project -> Settings -> Cron Jobs.
+Optional: add a `CRON_SECRET` environment variable in Vercel to reject calls that did not come from Vercel's cron.
+
 ## Rules to remember
 
 - Everyone can read all recipes and bakes. Only the owner can edit or delete their own (enforced in the database).
