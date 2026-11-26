@@ -124,6 +124,7 @@ export default function RecipesBrowser({
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
+              isGuest={!meId}
               coverUrl={covers[recipe.id] ?? null}
               by={recipe.user_id === meId ? undefined : people[recipe.user_id] ?? { name: "Someone", avatarUrl: null }}
               showPublic={recipe.user_id === meId && recipe.is_public}

@@ -167,7 +167,7 @@ export default function RecipeDetailClient({
       </div>
       <p className="text-[11px] font-extrabold uppercase tracking-wide text-crust-500">
         {recipe.category}
-        {recipe.source_type === "scanned" && " · scanned"}
+        {!isGuest && recipe.source_type === "scanned" && " · scanned"}
       </p>
       <p className="mb-4 mt-1 text-[13px] font-bold text-crust-500">
         Added by {canEdit ? "you" : ownerName}

@@ -9,11 +9,13 @@ export default function RecipeCard({
   coverUrl,
   by,
   showPublic,
+  isGuest,
 }: {
   recipe: Recipe;
   coverUrl: string | null;
   by?: { name: string; avatarUrl: string | null };
   showPublic?: boolean;
+  isGuest?: boolean;
 }) {
   const { emoji, accent } = categoryStyle(recipe.category);
   const classes = ACCENT_CLASSES[accent];
@@ -48,7 +50,7 @@ export default function RecipeCard({
         <h2 className="font-display text-[19px] font-bold leading-tight text-ink">{recipe.title}</h2>
         <p className={`mt-0.5 text-[11px] font-extrabold uppercase tracking-wide ${classes.text}`}>
           {recipe.category}
-          {recipe.source_type === "scanned" && " · scanned"}
+          {!isGuest && recipe.source_type === "scanned" && " · scanned"}
         </p>
         {tags.length > 0 && (
           <div className="mt-2 flex flex-nowrap gap-1.5 overflow-hidden">
