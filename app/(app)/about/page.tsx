@@ -13,7 +13,7 @@ export default async function AboutPage() {
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader title="About" hand="why this book exists" />
-      <div className="card space-y-3.5 text-[15.5px] font-semibold leading-relaxed text-ink">
+      <div className="card space-y-3.5 p-5 text-[15.5px] font-semibold leading-relaxed text-ink">
         <p>
           Everyone in my family bakes. Mom is the reason, and she&apos;s the best baker we know. Cut any of us open and
           you&apos;d probably find flour and sugar inside.
