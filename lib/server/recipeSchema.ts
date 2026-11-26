@@ -18,6 +18,7 @@ export const RECIPE_RESPONSE_SCHEMA = {
           unit: { type: "string" },
           name: { type: "string" },
           note: { type: "string" },
+          section: { type: "string" },
         },
         required: ["name"],
       },
@@ -37,7 +38,9 @@ export const EXTRACTION_RULES = `Return JSON matching the schema exactly. Rules:
   - unit: a normalized unit (cup, tbsp, tsp, g, kg, ml, l, oz, lb, pinch, clove, whole, large, medium, small, stick, can, packet, slice) if one is present, otherwise empty string. Do not invent a unit that isn't there.
   - name: the clean ingredient name only - no bullets, no quantity, no unit, no parenthetical weight equivalents.
   - note: anything else useful (a gram/ml equivalent that was in parentheses, "packed", "chopped", "room temperature", a brand). Empty string if nothing.
+- section (on each ingredient): only when the source groups ingredients under sub-headings for separate components (e.g. "For the cake", "Frosting:", "Filling", "Glaze"). Use a short clean name ("Cake", "Frosting") and give every ingredient in that group the same value. Use an empty string for a simple recipe with one ingredient list. Never invent groups that are not in the source.
 - steps: an ordered list of instruction sentences, stripped of leading numbering ("1.", "2)"). If no instructions are present at all, return an empty array - do not invent steps.
+  - If the instructions are grouped by component (e.g. "For the frosting"), put a heading entry before that group, written exactly as "## Name" (for example "## Frosting"), using the same names as the ingredient sections. Heading entries are not steps. Add them only when the source groups its steps, or when the ingredients have sections and it is clear which component each step belongs to. Otherwise add no headings.
 - bakeTimeMin: total OVEN baking time in whole minutes, as a number, or null.
   - Only count time actually spent baking or roasting in an oven. IGNORE resting, chilling, proofing/rising, cooling, freezing, soaking, and stovetop, steaming or frying time.
   - One baking time: use it ("1 hour" -> 60, "1 hr 15 min" -> 75).

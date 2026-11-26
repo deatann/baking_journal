@@ -4,6 +4,10 @@ export interface Ingredient {
   qty: number | null;
   unit: string;
   note: string;
+  /** Optional component name, e.g. "Frosting". Rows with the same label sit together. */
+  section?: string;
+  /** Editor-only: a heading row. Never stored. */
+  isHeader?: boolean;
 }
 
 export interface Recipe {

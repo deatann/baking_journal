@@ -17,6 +17,7 @@ interface RawIngredient {
   unit?: string;
   name?: string;
   note?: string;
+  section?: string;
 }
 
 interface RawParsed {
@@ -55,8 +56,13 @@ function shapeResult(data: RawParsed): ParsedRecipe {
       qtyRaw: ing.qtyRaw || "",
       unit: ing.unit || "",
       note: ing.note || "",
+      ...((ing.section || "").trim() ? { section: (ing.section || "").trim() } : {}),
     })),
-    steps: (data.steps || []).map((s) => s.trim()).filter(Boolean),
+    // "## Name" entries are section headings; normalise whatever spacing the model used.
+    steps: (data.steps || [])
+      .map((s) => s.trim())
+      .map((s) => (/^##/.test(s) ? `## ${s.replace(/^##\s*/, "").trim()}` : s))
+      .filter((s) => s && s !== "##" && s !== "## "),
     unparsedLines: [],
     bakeTimeMin: cleanBakeTime(data.bakeTimeMin),
     ovenTempC: cleanOvenTemp(data.ovenTempC),

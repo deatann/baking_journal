@@ -1,6 +1,9 @@
 "use client";
 
+import { Fragment } from "react";
+
 import { ParsedRecipe } from "@/lib/parseRecipeText";
+import { groupIngredients, groupSteps, isStepHeading } from "@/lib/sections";
 
 interface Props {
   parsed: ParsedRecipe;
@@ -75,13 +78,22 @@ export default function ParsedRecipeReview({
       <div>
         <p className={h}>Ingredients found ({parsed.ingredients.length})</p>
         <ul className="overflow-hidden rounded-2xl border-[1.5px] border-line bg-white">
-          {parsed.ingredients.map((ing, i) => (
-            <li key={ing.id} className={`px-3 py-2 text-[15px] ${i > 0 ? "border-t border-crust-200" : ""}`}>
-              {ing.qtyRaw && <span className="font-extrabold">{ing.qtyRaw} </span>}
-              {ing.unit && <span className="font-bold text-crust-500">{ing.unit} </span>}
-              {ing.name}
-              {ing.note && <span className="ml-1 text-[13px] text-crust-400">{ing.note}</span>}
-            </li>
+          {groupIngredients(parsed.ingredients as any).map((group, gi) => (
+            <Fragment key={gi}>
+              {group.title && (
+                <li className={`bg-butter-100 px-3 py-1.5 font-display text-[15px] font-bold ${gi > 0 ? "border-t border-crust-200" : ""}`}>
+                  {group.title}
+                </li>
+              )}
+              {group.items.map((ing: any, i) => (
+                <li key={ing.id} className={`px-3 py-2 text-[15px] ${i > 0 || group.title || gi > 0 ? "border-t border-crust-200" : ""}`}>
+                  {ing.qtyRaw && <span className="font-extrabold">{ing.qtyRaw} </span>}
+                  {ing.unit && <span className="font-bold text-crust-500">{ing.unit} </span>}
+                  {ing.name}
+                  {ing.note && <span className="ml-1 text-[13px] text-crust-400">{ing.note}</span>}
+                </li>
+              ))}
+            </Fragment>
           ))}
           {parsed.ingredients.length === 0 && (
             <li className="px-3 py-2 text-sm text-crust-400">None detected - you&apos;ll add these manually.</li>
@@ -97,13 +109,20 @@ export default function ParsedRecipeReview({
       </div>
 
       <div>
-        <p className={h}>Steps found ({parsed.steps.length})</p>
+        <p className={h}>Steps found ({parsed.steps.filter((x) => !isStepHeading(x)).length})</p>
         {parsed.steps.length > 0 ? (
-          <ol className="list-decimal space-y-1.5 rounded-2xl border-2 border-crust-200 bg-white p-3 pl-8 text-[15px]">
-            {parsed.steps.map((step, i) => (
-              <li key={i}>{step}</li>
+          <div className="space-y-3 rounded-2xl border-2 border-crust-200 bg-white p-3 text-[15px]">
+            {groupSteps(parsed.steps).map((g, gi) => (
+              <div key={gi}>
+                {g.title && <p className="mb-1 font-display text-[15px] font-bold text-crust-700">{g.title}</p>}
+                <ol className="list-decimal space-y-1.5 pl-5">
+                  {g.items.map((it) => (
+                    <li key={it.index}>{it.text}</li>
+                  ))}
+                </ol>
+              </div>
             ))}
-          </ol>
+          </div>
         ) : (
           <p className="text-sm text-crust-400">None detected - you&apos;ll add these manually.</p>
         )}

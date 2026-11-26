@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Ingredient } from "@/lib/types";
 import { formatQty, scaleQty, SCALE_PRESETS, parseQty } from "@/lib/scale";
 import { convertIngredient } from "@/lib/convert";
 import { densityKey } from "@/lib/density";
+import { groupIngredients } from "@/lib/sections";
 
 interface Props {
   ingredients: Ingredient[];
@@ -109,46 +110,63 @@ export default function ScaleCalculator({
       )}
 
       <ul className="overflow-hidden rounded-2xl border-[1.5px] border-line bg-white">
-        {ingredients.map((ing, idx) => {
-          const scaledQty = scaleQty(ing.qty, factor);
-          const done = ticked.has(ing.id);
-          return (
-            <li
-              key={ing.id}
-              onClick={() => toggleTick(ing.id)}
-              className={`grid cursor-pointer grid-cols-[24px_92px_1fr] items-baseline gap-x-2.5 px-3 py-2.5 text-[15px] ${
-                idx > 0 ? "border-t border-crust-200" : ""
-              } ${done ? "bg-crust-50" : ""}`}
-            >
-              <span
-                className={`grid h-5 w-5 translate-y-1 place-items-center rounded-md border-[1.5px] border-line text-[12px] font-extrabold ${
-                  done ? "bg-sage-400" : "bg-white"
-                }`}
-                aria-hidden
-              >
-                {done ? "✓" : ""}
-              </span>
-              <span className={`font-extrabold ${done ? "text-crust-400 line-through" : "text-ink"}`}>
-                {formatQty(scaledQty)} <span className="font-bold text-crust-500">{ing.unit}</span>
-              </span>
-              <span className={`min-w-0 ${done ? "text-crust-400 line-through" : "text-ink"}`}>
-                {ing.name}
-                {ing.note && <span className="ml-1.5 text-[13px] text-crust-400">{ing.note}</span>}
-              </span>
-              {showConversions && (
-                <div className="col-start-3" onClick={(e) => e.stopPropagation()}>
-                  <ConversionLine
-                    name={ing.name}
-                    qty={scaledQty}
-                    unit={ing.unit}
-                    userDensities={userDensities}
-                    onSaveDensity={onSaveDensity}
-                  />
-                </div>
+        {(() => {
+          let shownCount = 0;
+          return groupIngredients(ingredients).map((group) => (
+            <Fragment key={`${group.title}-${group.items[0].id}`}>
+              {group.title && (
+                <li
+                  className={`bg-butter-100 px-3 py-1.5 font-display text-[15px] font-bold text-crust-700 ${
+                    shownCount > 0 ? "border-t border-crust-200" : ""
+                  }`}
+                >
+                  {group.title}
+                </li>
               )}
-            </li>
-          );
-        })}
+              {group.items.map((ing) => {
+                const idx = shownCount++;
+                const scaledQty = scaleQty(ing.qty, factor);
+                const done = ticked.has(ing.id);
+                return (
+                  <li
+                    key={ing.id}
+                    onClick={() => toggleTick(ing.id)}
+                    className={`grid cursor-pointer grid-cols-[24px_92px_1fr] items-baseline gap-x-2.5 px-3 py-2.5 text-[15px] ${
+                      idx > 0 || group.title ? "border-t border-crust-200" : ""
+                    } ${done ? "bg-crust-50" : ""}`}
+                  >
+                    <span
+                      className={`grid h-5 w-5 translate-y-1 place-items-center rounded-md border-[1.5px] border-line text-[12px] font-extrabold ${
+                        done ? "bg-sage-400" : "bg-white"
+                      }`}
+                      aria-hidden
+                    >
+                      {done ? "✓" : ""}
+                    </span>
+                    <span className={`font-extrabold ${done ? "text-crust-400 line-through" : "text-ink"}`}>
+                      {formatQty(scaledQty)} <span className="font-bold text-crust-500">{ing.unit}</span>
+                    </span>
+                    <span className={`min-w-0 ${done ? "text-crust-400 line-through" : "text-ink"}`}>
+                      {ing.name}
+                      {ing.note && <span className="ml-1.5 text-[13px] text-crust-400">{ing.note}</span>}
+                    </span>
+                    {showConversions && (
+                      <div className="col-start-3" onClick={(e) => e.stopPropagation()}>
+                        <ConversionLine
+                          name={ing.name}
+                          qty={scaledQty}
+                          unit={ing.unit}
+                          userDensities={userDensities}
+                          onSaveDensity={onSaveDensity}
+                        />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </Fragment>
+          ));
+        })()}
         {ingredients.length === 0 && (
           <li className="px-3 py-2.5 text-sm text-crust-400">No ingredients listed.</li>
         )}

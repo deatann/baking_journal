@@ -7,6 +7,7 @@ import { COMMON_INGREDIENTS } from "@/lib/commonIngredients";
 import { DEFAULT_CATEGORIES } from "@/lib/categoryStyle";
 import IngredientEditor from "./IngredientEditor";
 import StepsEditor from "./StepsEditor";
+import { ingredientsToEditor, ingredientsFromEditor, cleanSteps } from "@/lib/sections";
 import CoverPhotoField from "./CoverPhotoField";
 import ShareSwitch from "./ShareSwitch";
 
@@ -40,6 +41,7 @@ export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopCon
   const [coverPreview, setCoverPreview] = useState<string | null>(initialCoverUrl);
   const [values, setValues] = useState<RecipeFormValues>({
     ...initial,
+    ingredients: ingredientsToEditor(initial.ingredients),
     tags: initial.tags.map(normTag).filter(Boolean),
   });
   const [tagDraft, setTagDraft] = useState("");
@@ -105,7 +107,12 @@ export default function RecipeForm({ initial, submitLabel, onSubmit, extraTopCon
     try {
       const pending = normTag(tagDraft);
       const tags = pending ? Array.from(new Set([...values.tags, pending])) : values.tags;
-      await onSubmit({ ...values, tags });
+      await onSubmit({
+        ...values,
+        tags,
+        ingredients: ingredientsFromEditor(values.ingredients),
+        steps: cleanSteps(values.steps),
+      });
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong saving this recipe.");
     } finally {

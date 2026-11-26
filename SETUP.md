@@ -82,3 +82,7 @@ The front page is now a read-only guest view. Family members sign in with "Famil
 4. Search engines: public recipes and /about are indexable (see /sitemap.xml). The journal is marked noindex.
 5. Optional: set `NEXT_PUBLIC_SITE_URL` in Vercel if the production URL changes (used by the sitemap).
 6. Cover photos are public by design (random file names). Removing a cover from a recipe does not delete the old file from storage.
+
+## Sections for ingredients and steps (optional)
+
+Complex bakes can split ingredients and steps into components ("Cake", "Frosting"). In the recipe form use "+ Add section" under ingredients or steps, then tap where the section should start. Recipes without sections look the same as before. No SQL migration: an ingredient stores an optional `section` label, and a step written as `## Name` is a heading. The AI parser and the local parser both try to detect sections when importing; check them on the review screen.

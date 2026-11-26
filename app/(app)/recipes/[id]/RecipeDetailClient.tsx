@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Recipe } from "@/lib/types";
 import { categoryStyle, ACCENT_CLASSES } from "@/lib/categoryStyle";
+import { groupSteps } from "@/lib/sections";
 import ScaleCalculator from "@/components/ScaleCalculator";
 import PageHeader from "@/components/PageHeader";
 import RecipeForm, { RecipeFormValues } from "@/components/RecipeForm";
@@ -232,27 +233,39 @@ export default function RecipeDetailClient({
       <section className="mb-8">
         <h2 className={h2}>Steps</h2>
         {recipe.steps.length > 0 ? (
-          <ol className="space-y-2.5">
-            {recipe.steps.map((step, i) => {
-              const done = doneSteps.has(i);
-              return (
-                <li
-                  key={i}
-                  onClick={() => toggleStep(i)}
-                  className={`flex cursor-pointer gap-3 text-[15px] leading-snug ${done ? "text-crust-400 line-through" : "text-ink"}`}
-                >
-                  <span
-                    className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-[1.5px] border-line text-xs font-extrabold no-underline ${
-                      done ? "bg-sage-400" : "bg-butter-300"
-                    }`}
-                  >
-                    {done ? "✓" : i + 1}
-                  </span>
-                  <span className="pt-1">{step}</span>
-                </li>
-              );
-            })}
-          </ol>
+          <div className="space-y-5">
+            {groupSteps(recipe.steps).map((group, gi) => (
+              <div key={gi}>
+                {group.title && (
+                  <h3 className="mb-2.5 inline-block rounded-full border-[1.5px] border-line bg-butter-100 px-3 py-0.5 font-display text-[15px] font-bold text-crust-700">
+                    {group.title}
+                  </h3>
+                )}
+                <ol className="space-y-2.5">
+                  {group.items.map((item, n) => {
+                    const i = item.index;
+                    const done = doneSteps.has(i);
+                    return (
+                      <li
+                        key={i}
+                        onClick={() => toggleStep(i)}
+                        className={`flex cursor-pointer gap-3 text-[15px] leading-snug ${done ? "text-crust-400 line-through" : "text-ink"}`}
+                      >
+                        <span
+                          className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-[1.5px] border-line text-xs font-extrabold no-underline ${
+                            done ? "bg-sage-400" : "bg-butter-300"
+                          }`}
+                        >
+                          {done ? "✓" : n + 1}
+                        </span>
+                        <span className="pt-1">{item.text}</span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            ))}
+          </div>
         ) : (
           <p className="text-sm text-crust-400">No steps recorded.</p>
         )}

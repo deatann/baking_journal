@@ -11,6 +11,8 @@ export interface ParsedIngredient {
   qtyRaw: string; // what was actually typed/read, e.g. "1 1/2"
   unit: string;
   note: string;
+  /** Component the ingredient belongs to ("Frosting"), when the source grouped them. */
+  section?: string;
 }
 
 export interface ParsedRecipe {
@@ -52,6 +54,30 @@ const BULLET_LEAD = /^(?:[-*•‣▪●○]\s*|\[[ xX]?\]\s*)+/;
 
 function stripBulletPrefix(line: string): string {
   return line.replace(BULLET_LEAD, "").trim();
+}
+
+
+// ---- section ("component") headings, e.g. "For the frosting:", "Filling", "Glaze" ----
+const COMPONENT_WORDS =
+  /^(?:the\s+)?(frosting|icing|filling|glaze|topping|toppings|ganache|crust|base|sauce|dough|batter|cake|syrup|cream|streusel|crumble|meringue|caramel|custard|sponge|assembly|to assemble|decoration|garnish)$/i;
+
+function titleCase(t: string) {
+  const s = t.trim();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Returns the section name if the line looks like a component heading, else null. */
+function headingText(line: string): string | null {
+  const cleaned = stripBulletPrefix(line).replace(/^#+\s*/, "").trim();
+  if (!cleaned || cleaned.length > 50 || QTY_LEAD.test(cleaned) || /[.!?]$/.test(cleaned)) return null;
+  const words = cleaned.replace(/[:：]\s*$/, "").trim().split(/\s+/);
+  if (words.length > 5) return null;
+  const bare = words.join(" ");
+  const endsColon = /[:：]\s*$/.test(cleaned);
+  const forThe = /^for\s+(the\s+)?\S+/i.test(bare);
+  const known = COMPONENT_WORDS.test(bare);
+  if (!(endsColon || forThe || known)) return null;
+  return titleCase(bare.replace(/^for\s+(the\s+)?/i, "").replace(/^the\s+/i, ""));
 }
 
 let idCounter = 0;
@@ -141,7 +167,8 @@ export function parseRecipeText(rawText: string): ParsedRecipe {
     .filter((l) => l.length > 0);
 
   let title = "";
-  const ingredientLines: string[] = [];
+  const ingredientLines: { line: string; section: string }[] = [];
+  let curSection = "";
   const stepLines: string[] = [];
   const unparsedLines: string[] = [];
 
@@ -154,12 +181,28 @@ export function parseRecipeText(rawText: string): ParsedRecipe {
     if (SECTION_HEADERS.ingredients.test(line)) {
       section = "ingredients";
       sawAnyHeader = true;
+      // "Ingredients for the frosting" carries a section name after the keyword.
+      const rest = line.replace(/^ingredients?\b\s*[:\-–]?\s*/i, "").replace(/^for\s+(the\s+)?/i, "").replace(/[:：]\s*$/, "").trim();
+      if (rest && rest.split(/\s+/).length <= 4) curSection = titleCase(rest);
       continue;
     }
     if (SECTION_HEADERS.steps.test(line)) {
       section = "steps";
       sawAnyHeader = true;
+      const rest = line.replace(/^(instructions?|directions?|method|steps?|preparation)\b\s*[:\-–]?\s*/i, "").replace(/^for\s+(the\s+)?/i, "").replace(/[:：]\s*$/, "").trim();
+      if (rest && rest.split(/\s+/).length <= 4) stepLines.push(`## ${titleCase(rest)}`);
       continue;
+    }
+
+    // Component heading ("Frosting:", "For the filling") inside a list.
+    {
+      const h = headingText(line);
+      const inIngredients = section === "ingredients" || (section === "none" && stepLines.length === 0);
+      if (h && !(section === "none" && !sawAnyHeader && i < 1)) {
+        if (inIngredients) curSection = h;
+        else stepLines.push(`## ${h}`);
+        continue;
+      }
     }
 
     // First short, non-quantity line before any section header is the title guess.
@@ -169,7 +212,7 @@ export function parseRecipeText(rawText: string): ParsedRecipe {
     }
 
     if (section === "ingredients") {
-      ingredientLines.push(stripBulletPrefix(line));
+      ingredientLines.push({ line: stripBulletPrefix(line), section: curSection });
     } else if (section === "steps") {
       stepLines.push(stripBulletPrefix(line).replace(/^\d+[.)]\s*/, ""));
     } else {
@@ -179,7 +222,7 @@ export function parseRecipeText(rawText: string): ParsedRecipe {
       const looksLikeStep =
         /^\d+[.)]\s/.test(cleaned) || cleaned.length > 60 || /\.\s*$/.test(cleaned);
 
-      if (looksLikeIngredient) ingredientLines.push(cleaned);
+      if (looksLikeIngredient) ingredientLines.push({ line: cleaned, section: curSection });
       else if (looksLikeStep) stepLines.push(cleaned.replace(/^\d+[.)]\s*/, ""));
       else unparsedLines.push(line);
     }
@@ -189,13 +232,16 @@ export function parseRecipeText(rawText: string): ParsedRecipe {
   const rescued: string[] = [];
   for (const line of unparsedLines) {
     const cleaned = stripBulletPrefix(line);
-    if (QTY_LEAD.test(cleaned)) ingredientLines.push(cleaned);
+    if (QTY_LEAD.test(cleaned)) ingredientLines.push({ line: cleaned, section: "" });
     else rescued.push(line);
   }
 
   return {
     title: title || "Untitled recipe",
-    ingredients: ingredientLines.map(splitQtyUnitName),
+    ingredients: ingredientLines.map(({ line, section }) => {
+      const ing = splitQtyUnitName(line);
+      return section ? { ...ing, section } : ing;
+    }),
     steps: stepLines,
     unparsedLines: rescued,
   };
