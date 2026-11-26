@@ -301,7 +301,7 @@ export default function JournalBrowser({
                       </div>
 
                       {own && menuFor === bake.id && (
-                        <div className="absolute right-3 top-14 z-20 animate-drop overflow-hidden rounded-2xl border-[1.5px] border-line bg-white shadow-pop">
+                        <div className="absolute bottom-[calc(100%-0.5rem)] right-3 z-20 animate-drop overflow-hidden rounded-2xl border-[1.5px] border-line bg-white shadow-pop">
                           <button
                             type="button"
                             onClick={() => togglePublic(bake)}
