@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { isStepHeading, stepHeadingText, makeStepHeading } from "@/lib/sections";
+import { isStepHeading, stepHeadingText, stepHeadingRaw, makeStepHeading } from "@/lib/sections";
 import SectionStrip from "./SectionStrip";
 
 interface Props {
@@ -59,7 +59,7 @@ export default function StepsEditor({ steps, onChange }: Props) {
                   type="text"
                   autoFocus={stepHeadingText(step) === ""}
                   placeholder="e.g. Cake, Frosting, Filling"
-                  value={stepHeadingText(step)}
+                  value={stepHeadingRaw(step)}
                   onChange={(e) => updateStep(i, makeStepHeading(e.target.value))}
                   className="field !h-10 min-w-0 flex-1 !px-3 font-extrabold"
                 />

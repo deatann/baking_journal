@@ -158,7 +158,7 @@ function NewBakeForm() {
 
         <div className="card p-4">
           <label className="label">Photos</label>
-          <PhotoUploader photos={photos} onChange={setPhotos} bucket="bake-photos" />
+          <PhotoUploader photos={photos} onChange={setPhotos} bucket="bake-photos" cropAspect={3 / 4} />
         </div>
 
         <div className="card p-4">

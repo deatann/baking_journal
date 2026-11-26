@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/compressImage";
 import { categoryStyle } from "@/lib/categoryStyle";
+import CropDialog from "./CropDialog";
 
 // Cover photo picker for a recipe: choose from library, take a photo, replace or remove.
 // The file goes to the public "recipe-covers" bucket under <user id>/<random>.jpg.
@@ -19,6 +20,38 @@ export default function CoverPhotoField({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { emoji } = categoryStyle(category);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+
+  // Saved covers live at a remote URL; fetch them into a local blob so the canvas can read them.
+  async function startCrop() {
+    if (!previewUrl) return;
+    setError(null);
+    try {
+      if (previewUrl.startsWith("blob:")) {
+        setCropSrc(previewUrl);
+      } else {
+        const res = await fetch(previewUrl);
+        if (!res.ok) throw new Error("Couldn't load the photo to crop.");
+        setCropSrc(URL.createObjectURL(await res.blob()));
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Couldn't load the photo to crop.");
+    }
+  }
+
+  async function uploadBlob(blob: Blob) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not signed in.");
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+    const { error: upErr } = await supabase.storage
+      .from("recipe-covers")
+      .upload(path, blob, { contentType: "image/jpeg" });
+    if (upErr) throw upErr;
+    onChange(path, URL.createObjectURL(blob));
+  }
 
   async function handleFile(file: File) {
     setError(null);
@@ -87,6 +120,11 @@ export default function CoverPhotoField({
           {pick(true)}
         </label>
         {previewUrl && (
+          <button type="button" onClick={startCrop} disabled={busy} className="btn !px-3 !py-1.5 text-[13px]">
+            ✂ Crop
+          </button>
+        )}
+        {previewUrl && (
           <button
             type="button"
             onClick={() => onChange(null, null)}
@@ -97,6 +135,17 @@ export default function CoverPhotoField({
         )}
       </div>
       {error && <p className="mt-1.5 text-xs font-bold text-red-600">{error}</p>}
+      {cropSrc && (
+        <CropDialog
+          src={cropSrc}
+          aspect={4 / 3}
+          onCancel={() => setCropSrc(null)}
+          onDone={async (blob) => {
+            await uploadBlob(blob);
+            setCropSrc(null);
+          }}
+        />
+      )}
     </div>
   );
 }

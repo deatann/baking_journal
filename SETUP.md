@@ -86,3 +86,7 @@ The front page is now a read-only guest view. Family members sign in with "Famil
 ## Sections for ingredients and steps (optional)
 
 Complex bakes can split ingredients and steps into components ("Cake", "Frosting"). In the recipe form use "+ Add section" under ingredients or steps, then tap where the section should start. Recipes without sections look the same as before. No SQL migration: an ingredient stores an optional `section` label, and a step written as `## Name` is a heading. The AI parser and the local parser both try to detect sections when importing; check them on the review screen.
+
+## Cropping photos (optional)
+
+Cover photos and bake photos upload as before. Each has an optional "Crop" button that opens a fixed-frame crop screen (4:3 for covers, 3:4 for bake photos). Cropping uploads a new file and replaces the old one in the form. Bake photos can be cropped while logging a bake. Run `npm install` after pulling (adds `react-easy-crop`).

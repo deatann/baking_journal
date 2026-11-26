@@ -7,6 +7,8 @@ import { Ingredient, newIngredientId } from "./types";
 // ---------- steps ----------
 export const isStepHeading = (s: string) => /^##(\s|$)/.test(s);
 export const stepHeadingText = (s: string) => s.replace(/^##\s*/, "").trim();
+// Untrimmed text for the editor input, so a space typed at the end of a word is not swallowed.
+export const stepHeadingRaw = (s: string) => s.replace(/^##(?: )?/, "");
 export const makeStepHeading = (text: string) => `## ${text}`;
 
 /** Drops blank steps, blank headings, and headings with no step under them. */

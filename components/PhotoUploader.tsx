@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/compressImage";
+import CropDialog from "./CropDialog";
 
 export interface UploadedPhoto {
   path: string;
@@ -14,9 +15,12 @@ interface Props {
   onChange: (photos: UploadedPhoto[]) => void;
   bucket: string;
   maxPhotos?: number;
+  /** Width / height of the frame photos are shown in. Adds an optional Crop button when set. */
+  cropAspect?: number;
 }
 
-export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 }: Props) {
+export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8, cropAspect }: Props) {
+  const [cropping, setCropping] = useState<UploadedPhoto | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +56,22 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
     }
   }
 
+  async function replaceWithCrop(old: UploadedPhoto, blob: Blob) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not signed in.");
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, blob, { contentType: "image/jpeg" });
+    if (uploadError) throw uploadError;
+    onChange(photos.map((p) => (p.path === old.path ? { path, previewUrl: URL.createObjectURL(blob) } : p)));
+    // The uncropped file was only uploaded in this form and isn't attached to anything yet.
+    supabase.storage.from(bucket).remove([old.path]).catch(() => {});
+  }
+
   function removePhoto(path: string) {
     onChange(photos.filter((p) => p.path !== path));
   }
@@ -66,6 +86,15 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
               alt=""
               className="h-24 w-24 rounded-xl border-[1.5px] border-line object-cover"
             />
+            {cropAspect && (
+              <button
+                type="button"
+                onClick={() => setCropping(photo)}
+                className="absolute bottom-1 left-1 rounded-full border-[1.5px] border-line bg-white/95 px-2 py-0.5 text-[10px] font-extrabold text-ink"
+              >
+                ✂ Crop
+              </button>
+            )}
             <button
               type="button"
               onClick={() => removePhoto(photo.path)}
@@ -96,6 +125,17 @@ export default function PhotoUploader({ photos, onChange, bucket, maxPhotos = 8 
         )}
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
+      {cropping && cropAspect && (
+        <CropDialog
+          src={cropping.previewUrl}
+          aspect={cropAspect}
+          onCancel={() => setCropping(null)}
+          onDone={async (blob) => {
+            await replaceWithCrop(cropping, blob);
+            setCropping(null);
+          }}
+        />
+      )}
       <p className="text-xs text-crust-500">
         Photos are resized before upload. {photos.length}/{maxPhotos}.
       </p>
